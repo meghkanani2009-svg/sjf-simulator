@@ -31,15 +31,26 @@ bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
 if bg_image:
     background_css = f"""
     <style>
-        [data-testid="stAppViewContainer"] {{
+        /* The ultimate mobile-safe fixed background trick */
+        .stApp::before {{
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background-image: url("data:image/png;base64,{bg_image}");
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; 
             background-repeat: no-repeat;
+            z-index: -999;
+        }}
+        /* Make sure the main containers are transparent so the background shows */
+        [data-testid="stAppViewContainer"], .stApp {{
+            background: transparent !important;
         }}
         [data-testid="stHeader"] {{
-            background: rgba(0,0,0,0);
+            background: rgba(0,0,0,0) !important;
         }}
     </style>
     """
@@ -55,7 +66,7 @@ else:
 st.markdown(background_css + """
 <style>
     /* Prevent horizontal scrolling/wobble on the whole app */
-    .stApp {
+    html, body {
         overflow-x: hidden !important;
     }
 
@@ -151,12 +162,6 @@ st.markdown(background_css + """
        📱 AGGRESSIVE MOBILE FIXES (max-width: 768px)
        ========================================= */
     @media (max-width: 768px) {
-        /* Fix the background zoom issue completely */
-        [data-testid="stAppViewContainer"] {
-            background-attachment: scroll !important;
-            background-position: top center !important;
-        }
-
         /* Tightly control the main container padding */
         .block-container {
             padding-top: 1.5rem !important;
