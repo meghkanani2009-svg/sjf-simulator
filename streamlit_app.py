@@ -1,23 +1,44 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import base64
 
 # --- 1. Page Setup ---
 st.set_page_config(page_title="SJF Simulator", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. Parallax & Tiered Transparency CSS ---
+# --- 2. Dynamic Background Image Injection ---
+# We use this function to read your local image and convert it so the CSS can read it
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+try:
+    # Read the specific image file you requested
+    img_base64 = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
+    
+    # Inject it into the background CSS
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{img_base64}");
+            background-attachment: fixed; 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+except FileNotFoundError:
+    st.warning("Could not find the background image. Please make sure 'Screenshot 2026-08-08 215442.png' is in the exact same folder as this script!")
+
+
+# --- 3. Rest of the CSS (50% Transparency & Solid Cards) ---
 st.markdown("""
 <style>
-    /* Parallax Background Implementation */
-    .stApp {
-        /* High-resolution, professional dark tech/abstract background */
-        background-image: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop");
-        background-attachment: fixed; /* Parallax scrolling effect */
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-    }
-    
     /* Adjust spacing for a cinematic feel */
     .block-container {
         padding-top: 4rem !important;
@@ -59,7 +80,7 @@ st.markdown("""
     /* --- HIGHEST IMPORTANCE: SOLID CONTAINERS --- */
     /* Highlighted Metric Boxes (Averages) - 100% Solid */
     div[data-testid="metric-container"] {
-        background-color: #0F172A; /* 100% Solid Dark Navy */
+        background-color: #0F172A; /* Solid Dark Navy/Slate */
         border: 2px solid #38BDF8; 
         border-left: 8px solid #38BDF8; 
         padding: 20px;
@@ -86,7 +107,7 @@ st.markdown("""
         -webkit-backdrop-filter: blur(8px);
         border-radius: 8px;
         padding: 1rem;
-        border: 1px solid rgba(51, 65, 85, 0.6); /* Slightly transparent border */
+        border: 1px solid rgba(51, 65, 85, 0.6);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
 
@@ -109,11 +130,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Header Section ---
+# --- 4. Header Section ---
 st.markdown("<div class='hero-title'>SJF Scheduling Engine</div>", unsafe_allow_html=True)
 st.markdown("<div class='hero-subtitle'>Non-Preemptive Shortest Job First Algorithm Visualization</div>", unsafe_allow_html=True)
 
-# --- 4. Default Data ---
+# --- 5. Default Data ---
 if 'processes' not in st.session_state:
     st.session_state.processes = pd.DataFrame({
         'Process': ['P1', 'P2', 'P3', 'P4'],
@@ -121,14 +142,14 @@ if 'processes' not in st.session_state:
         'Burst Time': [6, 4, 2, 1]
     })
 
-# --- 5. Input Section ---
+# --- 6. Input Section ---
 st.subheader("Process Queue Configuration")
 st.write("Modify the arrival and burst times below. The simulation will adapt dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
 st.write("<br>", unsafe_allow_html=True)
 
-# --- 6. Simulation Logic ---
+# --- 7. Simulation Logic ---
 if st.button("Initialize Simulation Sequence"):
     
     processes = []
@@ -178,7 +199,7 @@ if st.button("Initialize Simulation Sequence"):
             else:
                  gantt_data[-1]['Duration'] += 1
 
-    # --- 7. Output UI Integration ---
+    # --- 8. Output UI Integration ---
     st.divider()
     
     results_df = pd.DataFrame(processes)
@@ -220,7 +241,7 @@ if st.button("Initialize Simulation Sequence"):
         yaxis_title="",
         showlegend=False,
         height=350,
-        plot_bgcolor='#0F172A', /* 100% Solid Dark Navy for chart */
+        plot_bgcolor='#0F172A', 
         paper_bgcolor='#0F172A',
         font=dict(color="#F8FAFC"),
         xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
