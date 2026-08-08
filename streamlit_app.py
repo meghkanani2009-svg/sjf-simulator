@@ -4,6 +4,35 @@ import plotly.express as px
 
 # --- Page Setup ---
 st.set_page_config(page_title="SJF Scheduling Simulator", layout="wide")
+
+# --- Custom CSS Styling ---
+st.markdown("""
+<style>
+    /* Styling for the main metrics */
+    div[data-testid="metric-container"] {
+        background-color: #f0f2f6;
+        border: 1px solid #dcdcdc;
+        padding: 5% 5% 5% 10%;
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    /* Change the color of the metric label */
+    div[data-testid="metric-container"] > div:first-child > div > div > label {
+        color: #1f77b4; 
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    /* Style the metric value */
+    div[data-testid="metric-container"] > div:nth-child(2) > div {
+        color: #ff4b4b;
+        font-size: 2.5rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 st.title("CPU Scheduling Solver (Shortest Job First)")
 st.markdown("An interactive web simulator for Non-Preemptive SJF.")
 
@@ -18,13 +47,11 @@ if 'processes' not in st.session_state:
 # --- 1. Input Section ---
 st.subheader("1. Add Processes")
 st.write("Edit the table below to add, remove, or modify processes.")
-# The data_editor creates an interactive Excel-like grid right in the browser
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
 # --- 2. Simulation Logic ---
 if st.button("Solve & Generate Gantt Chart", type="primary"):
     
-    # Convert dataframe into a list of dictionaries for easier calculation
     processes = []
     for i, row in edited_df.iterrows():
         processes.append({
@@ -41,25 +68,21 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
     gantt_data = []
 
     while completed < n:
-        # Find available processes
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
-            # Sort by Burst Time, then Arrival Time
             available.sort(key=lambda x: (x['bt'], x['at']))
             current_p = available[0]
             
             start_time = current_time
             current_time += current_p['bt']
             
-            # Record for Gantt chart
             gantt_data.append({
                 'Task': current_p['id'], 
                 'Start': start_time, 
                 'Duration': current_p['bt']
             })
             
-            # Update metrics
             for p in processes:
                 if p['id'] == current_p['id']:
                     p['ct'] = current_time
@@ -69,7 +92,6 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
                     break
             completed += 1
         else:
-            # CPU is idle
             start_time = current_time
             current_time += 1
             if not gantt_data or gantt_data[-1]['Task'] != 'IDLE':
@@ -83,7 +105,22 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
     
     df_gantt = pd.DataFrame(gantt_data)
     
-    # Create an interactive horizontal bar chart using Plotly
+    # Define a custom color palette for the processes
+    # 'IDLE' gets a distinct grey color
+    color_discrete_map = {
+        'IDLE': '#d3d3d3',
+        'P1': '#1f77b4',
+        'P2': '#ff7f0e',
+        'P3': '#2ca02c',
+        'P4': '#d62728',
+        'P5': '#9467bd',
+        'P6': '#8c564b',
+        'P7': '#e377c2',
+        'P8': '#7f7f7f',
+        'P9': '#bcbd22',
+        'P10': '#17becf'
+    }
+    
     fig = px.bar(
         df_gantt, 
         base="Start", 
@@ -92,28 +129,34 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
         color="Task", 
         orientation='h',
         text="Task",
-        title="CPU Execution Timeline"
+        title="CPU Execution Timeline",
+        color_discrete_map=color_discrete_map # Apply the custom colors
     )
     
     fig.update_layout(
         xaxis_title="Time", 
         yaxis_title="Process",
         showlegend=False,
-        height=300
+        height=300,
+        plot_bgcolor='rgba(0,0,0,0)', # Clean up the chart background
+        xaxis=dict(showgrid=True, gridcolor='#e0e0e0'), # Add subtle gridlines
+        yaxis=dict(showgrid=False)
     )
     
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 4. Render Final Results Table ---
+    # --- 4. Render Final Results Table and Metrics ---
     st.subheader("3. Scheduling Results")
     
     results_df = pd.DataFrame(processes)
     results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
     results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
     
-    st.dataframe(results_df, use_container_width=True, hide_index=True)
-    
-    # Render Average Metrics
+    # Render Average Metrics FIRST so they stand out at the top of the section
     col1, col2 = st.columns(2)
     col1.metric("Average Waiting Time", f"{results_df['Waiting Time'].mean():.2f}")
     col2.metric("Average Turnaround Time", f"{results_df['Turnaround Time'].mean():.2f}")
+    
+    st.write("<br>", unsafe_allow_html=True) # Add a little spacing
+    
+    st.dataframe(results_df, use_container_width=True, hide_index=True)
