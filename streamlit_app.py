@@ -2,127 +2,42 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# --- 1. Page Configuration ---
-st.set_page_config(
-    page_title="SJF CPU Scheduling Simulator",
-    page_icon="⚡",
-    layout="wide"
-)
+# --- Page Setup ---
+st.set_page_config(page_title="SJF Scheduling Simulator", layout="wide")
 
-# --- 2. Global CSS Injection ---
+# --- Custom CSS Just for Highlighting Averages ---
 st.markdown("""
 <style>
-    /* Main Background */
-    .main {
-        background-color: #F8FAFC;
+    /* Styling to make the average metric boxes pop out */
+    div[data-testid="metric-container"] {
+        background-color: #eef6fc;
+        border: 2px solid #1f77b4;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
     
-    /* Custom Header */
-    .header-container {
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-        padding: 2rem;
-        border-radius: 12px;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    .header-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        margin: 0;
-        color: #FFFFFF;
-    }
-    .header-subtitle {
-        font-size: 1rem;
-        color: #94A3B8;
-        margin-top: 0.4rem;
-    }
-
-    /* Subheaders for Sections */
-    h3 {
-        color: #0F172A !important;
-        font-size: 1.4rem !important;
-        font-weight: 700 !important;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #E2E8F0;
-        margin-top: 2rem !important;
-        margin-bottom: 1rem !important;
-    }
-
-    /* Input Table (Data Editor) Styling */
-    [data-testid="stDataEditor"] {
-        background-color: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-        border: 1px solid #E2E8F0;
-    }
-
-    /* Output Table (DataFrame) Styling */
-    [data-testid="stDataFrame"] {
-        background-color: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-        border: 1px solid #E2E8F0;
-    }
-
-    /* Run Button Styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-        color: white;
-        font-weight: 700;
-        font-size: 1.1rem;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        border: none;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        transition: all 0.2s ease;
-        width: 100%;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-        transform: translateY(-2px);
-    }
-
-    /* =========================================================
-       HIGHLIGHTED AVERAGE METRICS CSS 
-       This makes the average times massive and highly visible
-       ========================================================= */
-    div[data-testid="metric-container"] {
-        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-        border: 2px solid #60A5FA;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
-        text-align: center;
-    }
-    div[data-testid="metric-container"] label {
-        color: #1E40AF !important;
-        font-weight: 800 !important;
+    /* Make the titles of the averages bold and blue */
+    div[data-testid="metric-container"] > div:first-child > div > div > label {
+        color: #1f77b4 !important; 
+        font-weight: bold !important;
         font-size: 1.1rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
-    div[data-testid="stMetricValue"] {
-        color: #DC2626 !important; /* Bold Red to make it pop */
-        font-size: 3rem !important;
-        font-weight: 900 !important;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    
+    /* Make the actual number values bold and red */
+    div[data-testid="metric-container"] > div:nth-child(2) > div {
+        color: #d62728 !important;
+        font-size: 2.5rem !important;
+        font-weight: bold !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Dashboard Header ---
-st.markdown("""
-<div class="header-container">
-    <div class="header-title">⚡ SJF CPU Scheduling Solver</div>
-    <div class="header-subtitle">Non-Preemptive Shortest Job First Algorithm Analytics & Execution Timeline</div>
-</div>
-""", unsafe_allow_html=True)
 
-# --- 4. Default Data Setup ---
+st.title("CPU Scheduling Solver (Shortest Job First)")
+st.markdown("An interactive web simulator for Non-Preemptive SJF.")
+
+# --- Default Data ---
 if 'processes' not in st.session_state:
     st.session_state.processes = pd.DataFrame({
         'Process': ['P1', 'P2', 'P3', 'P4'],
@@ -130,22 +45,14 @@ if 'processes' not in st.session_state:
         'Burst Time': [6, 4, 2, 1]
     })
 
-# --- 5. Input Section ---
-st.subheader("1. Process Queue Configuration")
-st.write("Modify the arrival and burst times directly in the table below:")
+# --- 1. Input Section ---
+st.subheader("1. Add Processes")
+st.write("Edit the table below to add, remove, or modify processes.")
+edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-edited_df = st.data_editor(
-    st.session_state.processes, 
-    num_rows="dynamic", 
-    use_container_width=True
-)
-
-st.write("") # Spacing before the button
-
-# --- 6. Core Algorithm & Visualization ---
-if st.button("🚀 Calculate SJF Scheduling"):
+# --- 2. Simulation Logic ---
+if st.button("Solve & Generate Gantt Chart", type="primary"):
     
-    # Read data from the table
     processes = []
     for i, row in edited_df.iterrows():
         processes.append({
@@ -161,12 +68,10 @@ if st.button("🚀 Calculate SJF Scheduling"):
     n = len(processes)
     gantt_data = []
 
-    # Process Execution Loop (Non-Preemptive)
     while completed < n:
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
-            # Sort by Burst Time, then Arrival Time for tie-breaking
             available.sort(key=lambda x: (x['bt'], x['at']))
             current_p = available[0]
             
@@ -176,11 +81,9 @@ if st.button("🚀 Calculate SJF Scheduling"):
             gantt_data.append({
                 'Task': current_p['id'], 
                 'Start': start_time, 
-                'Duration': current_p['bt'],
-                'End': current_time
+                'Duration': current_p['bt']
             })
             
-            # Calculate CT, TAT, and WT
             for p in processes:
                 if p['id'] == current_p['id']:
                     p['ct'] = current_time
@@ -190,52 +93,27 @@ if st.button("🚀 Calculate SJF Scheduling"):
                     break
             completed += 1
         else:
-            # CPU is idle waiting for the next process to arrive
             start_time = current_time
             current_time += 1
             if not gantt_data or gantt_data[-1]['Task'] != 'IDLE':
-                 gantt_data.append({'Task': 'IDLE', 'Start': start_time, 'Duration': 1, 'End': current_time})
+                 gantt_data.append({'Task': 'IDLE', 'Start': start_time, 'Duration': 1})
             else:
                  gantt_data[-1]['Duration'] += 1
-                 gantt_data[-1]['End'] = current_time
-
-    # Prepare final results dataframe
-    results_df = pd.DataFrame(processes)
-    results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
-    results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
     
-    avg_wt = results_df['Waiting Time'].mean()
-    avg_tat = results_df['Turnaround Time'].mean()
-    
-    # --- 7. Highlighted Key Metrics ---
+    # --- 3. Render Gantt Chart ---
     st.divider()
-    st.subheader("2. Key Performance Metrics")
-    
-    # Placed in columns so they appear side-by-side at the top
-    col1, col2 = st.columns(2)
-    col1.metric("Average Waiting Time", f"{avg_wt:.2f} ms")
-    col2.metric("Average Turnaround Time", f"{avg_tat:.2f} ms")
-    
-    st.write("") # Spacing
-
-    # --- 8. Styled & Locked Gantt Chart ---
-    st.subheader("3. Execution Timeline (Gantt Chart)")
+    st.subheader("2. Gantt Chart")
     
     df_gantt = pd.DataFrame(gantt_data)
     
-    # Automatically assign professional colors to processes
-    unique_tasks = df_gantt['Task'].unique()
-    palette = px.colors.qualitative.Prism
-    color_map = {}
-    color_idx = 0
+    # Define a clean color palette
+    color_discrete_map = {
+        'IDLE': '#d3d3d3', 'P1': '#1f77b4', 'P2': '#ff7f0e', 
+        'P3': '#2ca02c', 'P4': '#d62728', 'P5': '#9467bd', 
+        'P6': '#8c564b', 'P7': '#e377c2', 'P8': '#7f7f7f', 
+        'P9': '#bcbd22', 'P10': '#17becf'
+    }
     
-    for task in unique_tasks:
-        if task == 'IDLE':
-            color_map['IDLE'] = '#94A3B8' # Slate Grey for Idle time
-        else:
-            color_map[task] = palette[color_idx % len(palette)]
-            color_idx += 1
-
     fig = px.bar(
         df_gantt, 
         base="Start", 
@@ -244,44 +122,36 @@ if st.button("🚀 Calculate SJF Scheduling"):
         color="Task", 
         orientation='h',
         text="Task",
-        color_discrete_map=color_map
+        title="CPU Execution Timeline",
+        color_discrete_map=color_discrete_map
     )
     
-    fig.update_traces(
-        textposition='inside',
-        insidetextanchor='middle',
-        marker_line_color='white',
-        marker_line_width=1.5,
-        hovertemplate="<b>Process:</b> %{y}<br><b>Start:</b> %{base}<br><b>Duration:</b> %{x}<br><b>End:</b> %{customdata}<extra></extra>",
-        customdata=df_gantt['End']
-    )
-    
+    # Apply fixedrange=True so the chart cannot be accidentally zoomed in
     fig.update_layout(
-        xaxis=dict(
-            title="Time Units",
-            showgrid=True,
-            gridcolor="#E2E8F0",
-            zeroline=True,
-            zerolinecolor="#94A3B8",
-            dtick=1,
-            fixedrange=True  # DISABLES X-AXIS ZOOMING
-        ),
-        yaxis=dict(
-            title="",
-            autorange="reversed",
-            showgrid=False,
-            fixedrange=True  # DISABLES Y-AXIS ZOOMING
-        ),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        height=350,
-        margin=dict(l=20, r=20, t=20, b=40),
-        showlegend=False
+        xaxis_title="Time", 
+        yaxis_title="Process",
+        showlegend=False,
+        height=300,
+        plot_bgcolor='white',
+        xaxis=dict(showgrid=True, gridcolor='#e0e0e0', fixedrange=True, dtick=1),
+        yaxis=dict(showgrid=False, fixedrange=True)
     )
     
-    # Hide the modebar to prevent any accidental tool clicks
+    # Remove the floating menu bar
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    # --- 9. Detailed Final Table ---
-    st.subheader("4. Detailed Calculation Table")
+    # --- 4. Render Final Results Table and Metrics ---
+    st.subheader("3. Scheduling Results")
+    
+    results_df = pd.DataFrame(processes)
+    results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
+    results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
+    
+    # Render Average Metrics FIRST so the CSS highlights them at the top
+    col1, col2 = st.columns(2)
+    col1.metric("Average Waiting Time", f"{results_df['Waiting Time'].mean():.2f}")
+    col2.metric("Average Turnaround Time", f"{results_df['Turnaround Time'].mean():.2f}")
+    
+    st.write("<br>", unsafe_allow_html=True)
+    
     st.dataframe(results_df, use_container_width=True, hide_index=True)
