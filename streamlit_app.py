@@ -5,30 +5,31 @@ import plotly.express as px
 # --- Page Setup ---
 st.set_page_config(page_title="SJF Scheduling Simulator", layout="wide")
 
-# --- Custom CSS Just for Highlighting Averages ---
+# --- Subtle & Professional CSS ---
 st.markdown("""
 <style>
-    /* Styling to make the average metric boxes pop out */
+    /* Clean, minimalist card style for the average metrics */
     div[data-testid="metric-container"] {
-        background-color: #eef6fc;
-        border: 2px solid #1f77b4;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 5px solid #1f77b4; /* Clean blue accent line on the left */
         padding: 15px 20px;
-        border-radius: 10px;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Very soft, natural shadow */
     }
     
-    /* Make the titles of the averages bold and blue */
+    /* Subtle styling for the text label */
     div[data-testid="metric-container"] > div:first-child > div > div > label {
-        color: #1f77b4 !important; 
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
+        color: #475569 !important; /* Muted slate gray */
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
     }
     
-    /* Make the actual number values bold and red */
+    /* Clean, bold styling for the actual number */
     div[data-testid="metric-container"] > div:nth-child(2) > div {
-        color: #d62728 !important;
-        font-size: 2.5rem !important;
-        font-weight: bold !important;
+        color: #0f172a !important; /* Dark professional text */
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -106,7 +107,6 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
     
     df_gantt = pd.DataFrame(gantt_data)
     
-    # Define a clean color palette
     color_discrete_map = {
         'IDLE': '#d3d3d3', 'P1': '#1f77b4', 'P2': '#ff7f0e', 
         'P3': '#2ca02c', 'P4': '#d62728', 'P5': '#9467bd', 
@@ -126,7 +126,6 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
         color_discrete_map=color_discrete_map
     )
     
-    # Apply fixedrange=True so the chart cannot be accidentally zoomed in
     fig.update_layout(
         xaxis_title="Time", 
         yaxis_title="Process",
@@ -137,7 +136,6 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
         yaxis=dict(showgrid=False, fixedrange=True)
     )
     
-    # Remove the floating menu bar
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
     # --- 4. Render Final Results Table and Metrics ---
@@ -147,7 +145,6 @@ if st.button("Solve & Generate Gantt Chart", type="primary"):
     results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
     results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
     
-    # Render Average Metrics FIRST so the CSS highlights them at the top
     col1, col2 = st.columns(2)
     col1.metric("Average Waiting Time", f"{results_df['Waiting Time'].mean():.2f}")
     col2.metric("Average Turnaround Time", f"{results_df['Turnaround Time'].mean():.2f}")
