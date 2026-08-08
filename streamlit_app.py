@@ -5,117 +5,96 @@ import plotly.express as px
 # --- 1. Page Setup ---
 st.set_page_config(page_title="SJF Simulator", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. Advanced Parallax & Glassmorphism CSS ---
+# --- 2. Professional Dark Theme CSS ---
 st.markdown("""
 <style>
-    /* Parallax Background Implementation */
+    /* Solid Dark Background for the whole app */
     .stApp {
-        /* High-resolution abstract cinematic background */
-        background-image: url("https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop");
-        background-attachment: fixed; /* This creates the parallax effect */
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+        background-color: #0B0F19;
     }
     
-    /* Make the top padding a bit larger for a hero-section feel */
+    /* Adjust spacing */
     .block-container {
-        padding-top: 5rem !important;
-        padding-bottom: 5rem !important;
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
     }
 
-    /* Cinematic Header Typography */
+    /* Header Typography */
     .hero-title {
-        color: #ffffff;
-        font-size: 3.5rem;
-        font-weight: 900;
-        text-align: center;
-        letter-spacing: -1px;
-        text-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        margin-bottom: 0.5rem;
+        color: #F8FAFC;
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 0.2rem;
     }
     .hero-subtitle {
-        color: #e2e8f0;
-        font-size: 1.2rem;
-        text-align: center;
-        font-weight: 300;
-        letter-spacing: 1px;
-        text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        margin-bottom: 3rem;
+        color: #94A3B8;
+        font-size: 1.1rem;
+        font-weight: 400;
+        margin-bottom: 2rem;
     }
 
     /* Subheaders */
     h3 {
-        color: #ffffff !important;
+        color: #E2E8F0 !important;
         font-weight: 600 !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        margin-top: 2rem !important;
+        margin-top: 1.5rem !important;
+        border-bottom: 1px solid #1E293B;
+        padding-bottom: 0.5rem;
     }
 
     /* Text */
     p {
-        color: #f8fafc;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        color: #94A3B8;
     }
 
-    /* --- GLASSMORPHISM FOR ALL CONTAINERS --- */
+    /* --- SOLID DARK CARDS --- */
     /* Metric Boxes (Averages) */
     div[data-testid="metric-container"] {
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-left: 5px solid #38bdf8; /* Bright neon blue accent */
+        background-color: #151E2D; /* Solid dark slate */
+        border: 1px solid #1E293B;
+        border-left: 5px solid #38BDF8; /* Blue accent line */
         padding: 20px;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
     div[data-testid="metric-container"] label {
-        color: #cbd5e1 !important;
+        color: #94A3B8 !important;
         font-weight: 600 !important;
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
     }
     div[data-testid="stMetricValue"] {
-        color: #ffffff !important;
-        font-size: 3rem !important;
-        font-weight: 800 !important;
-        text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        color: #38BDF8 !important; /* Bright blue to pop against dark background */
+        font-size: 2.8rem !important;
+        font-weight: 700 !important;
     }
 
     /* Data Tables */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        background-color: #151E2D;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #1E293B;
     }
 
     /* Custom Button */
     .stButton > button {
-        background: rgba(56, 189, 248, 0.9);
-        color: #0f172a;
-        font-weight: 800;
-        font-size: 1.1rem;
-        padding: 0.75rem 2rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.4);
-        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-        transition: all 0.3s ease;
-        backdrop-filter: blur(5px);
+        background-color: #2563EB;
+        color: white;
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 0.5rem 2rem;
+        border-radius: 6px;
+        border: none;
+        transition: background-color 0.2s ease;
     }
     .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(56, 189, 248, 0.6);
-        background: rgba(56, 189, 248, 1);
-        color: black;
+        background-color: #1D4ED8;
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Hero Section ---
+# --- 3. Header Section ---
 st.markdown("<div class='hero-title'>SJF Scheduling Engine</div>", unsafe_allow_html=True)
 st.markdown("<div class='hero-subtitle'>Non-Preemptive Shortest Job First Algorithm Visualization</div>", unsafe_allow_html=True)
 
@@ -129,7 +108,7 @@ if 'processes' not in st.session_state:
 
 # --- 5. Input Section ---
 st.subheader("Process Queue Configuration")
-st.write("Modify the arrival and burst times below. The interface will adapt dynamically.")
+st.write("Modify the arrival and burst times below.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
 st.write("<br>", unsafe_allow_html=True)
@@ -203,11 +182,12 @@ if st.button("Initialize Simulation Sequence"):
     st.subheader("Execution Timeline")
     df_gantt = pd.DataFrame(gantt_data)
     
+    # Professional color palette for dark mode
     color_discrete_map = {
-        'IDLE': '#475569', 'P1': '#38bdf8', 'P2': '#818cf8', 
-        'P3': '#34d399', 'P4': '#f472b6', 'P5': '#fbbf24', 
-        'P6': '#f87171', 'P7': '#a78bfa', 'P8': '#2dd4bf', 
-        'P9': '#e879f9', 'P10': '#94a3b8'
+        'IDLE': '#334155', 'P1': '#38BDF8', 'P2': '#818CF8', 
+        'P3': '#34D399', 'P4': '#F472B6', 'P5': '#FBBF24', 
+        'P6': '#F87171', 'P7': '#A78BFA', 'P8': '#2DD4BF', 
+        'P9': '#E879F9', 'P10': '#94A3B8'
     }
     
     fig = px.bar(
@@ -226,11 +206,11 @@ if st.button("Initialize Simulation Sequence"):
         yaxis_title="",
         showlegend=False,
         height=350,
-        # Make the chart background completely transparent to let the parallax show through
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="white"),
-        xaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', fixedrange=True, dtick=1),
+        # Solid dark background for the chart area
+        plot_bgcolor='#151E2D',
+        paper_bgcolor='#151E2D',
+        font=dict(color="#F8FAFC"),
+        xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
         yaxis=dict(showgrid=False, fixedrange=True)
     )
     
