@@ -22,8 +22,8 @@ def get_base64_of_bin_file(bin_file):
     except FileNotFoundError:
         return None
 
-# Convert your exact screenshot to base64 so CSS can render it
-bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
+# Convert your newly updated screenshot to base64 so CSS can render it
+bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442_2.png")
 
 if bg_image:
     background_css = f"""
@@ -44,7 +44,7 @@ if bg_image:
     """
 else:
     # Fallback dark background just in case the image isn't in the folder yet
-    st.warning("⚠️ Could not find 'Screenshot 2026-08-08 215442.png'. Make sure it is in the same folder as this script!")
+    st.warning("⚠️ Could not find 'Screenshot 2026-08-08 215442_2.png'. Make sure it is in the same folder as this script!")
     background_css = """
     <style>
         [data-testid="stAppViewContainer"] { background-color: #0B1121; }
