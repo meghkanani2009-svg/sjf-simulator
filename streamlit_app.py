@@ -15,20 +15,26 @@ st.set_page_config(
 # --- 2. Safely Load Your Specific Background Image ---
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
+    # This forces Python to look in the exact same folder as this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, bin_file)
+    
     try:
-        with open(bin_file, 'rb') as f:
+        with open(file_path, 'rb') as f:
             data = f.read()
         return base64.b64encode(data).decode()
     except FileNotFoundError:
+        # Prints exactly where it tried to look on your screen if it fails
+        st.error(f"⚠️ Looked for the image here, but couldn't find it: {file_path}")
         return None
 
-# Convert your newly updated screenshot to base64 so CSS can render it
+# Convert your screenshot to base64 so CSS can render it
 bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442_2.png")
 
 if bg_image:
     background_css = f"""
     <style>
-        /* Target the new Streamlit main container */
+        /* Target the Streamlit main container */
         [data-testid="stAppViewContainer"] {{
             background-image: url("data:image/png;base64,{bg_image}");
             background-size: cover;
@@ -43,8 +49,7 @@ if bg_image:
     </style>
     """
 else:
-    # Fallback dark background just in case the image isn't in the folder yet
-    st.warning("⚠️ Could not find 'Screenshot 2026-08-08 215442_2.png'. Make sure it is in the same folder as this script!")
+    # Fallback dark background
     background_css = """
     <style>
         [data-testid="stAppViewContainer"] { background-color: #0B1121; }
