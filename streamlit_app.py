@@ -28,8 +28,8 @@ def get_base64_of_bin_file(bin_file):
         st.error(f"⚠️ Looked for the image here, but couldn't find it: {file_path}")
         return None
 
-# Convert your screenshot to base64 so CSS can render it
-bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442_2.png")
+# Convert your exact screenshot to base64 so CSS can render it
+bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
 
 if bg_image:
     background_css = f"""
