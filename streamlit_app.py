@@ -15,7 +15,6 @@ st.set_page_config(
 # --- 2. Safely Load Your Specific Background Image ---
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
-    # This forces Python to look in the exact same folder as this script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(script_dir, bin_file)
     
@@ -24,32 +23,27 @@ def get_base64_of_bin_file(bin_file):
             data = f.read()
         return base64.b64encode(data).decode()
     except FileNotFoundError:
-        # Prints exactly where it tried to look on your screen if it fails
         st.error(f"⚠️ Looked for the image here, but couldn't find it: {file_path}")
         return None
 
-# Convert your exact screenshot to base64 so CSS can render it
 bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
 
 if bg_image:
     background_css = f"""
     <style>
-        /* Target the Streamlit main container */
         [data-testid="stAppViewContainer"] {{
             background-image: url("data:image/png;base64,{bg_image}");
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Parallax effect */
+            background-attachment: fixed; /* Parallax effect for desktop */
             background-repeat: no-repeat;
         }}
-        /* Make the default top header transparent so the background shows through */
         [data-testid="stHeader"] {{
             background: rgba(0,0,0,0);
         }}
     </style>
     """
 else:
-    # Fallback dark background
     background_css = """
     <style>
         [data-testid="stAppViewContainer"] { background-color: #0B1121; }
@@ -57,10 +51,10 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Glassmorphism & Layout ---
+# --- 3. Advanced CSS: Glassmorphism, Layout, & Mobile Responsiveness ---
 st.markdown(background_css + """
 <style>
-    /* PAGE SPACING & TYPOGRAPHY */
+    /* DESKTOP SPACING & TYPOGRAPHY */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 5rem !important;
@@ -93,7 +87,7 @@ st.markdown(background_css + """
         margin-top: 2rem !important;
     }
 
-    /* HIGHLIGHTED AVERAGES (100% Solid Dark) */
+    /* HIGHLIGHTED AVERAGES */
     div[data-testid="metric-container"] {
         background: #0B1121; 
         border: 1px solid #1E293B;
@@ -116,7 +110,7 @@ st.markdown(background_css + """
         text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
     }
 
-    /* TABLES (60% Transparent Glassmorphism) */
+    /* TABLES */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
         background: rgba(11, 17, 33, 0.6); 
         backdrop-filter: blur(12px); 
@@ -146,6 +140,49 @@ st.markdown(background_css + """
         box-shadow: 0 12px 25px rgba(2, 132, 199, 0.6);
         background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
         color: #00F6FF;
+    }
+
+    /* =========================================
+       📱 MOBILE RESPONSIVENESS FIXES 
+       ========================================= */
+    @media (max-width: 768px) {
+        /* 1. Turn off parallax on mobile (prevents iOS zooming bugs) */
+        [data-testid="stAppViewContainer"] {
+            background-attachment: scroll !important;
+            background-size: cover !important;
+        }
+        
+        /* 2. Shrink massive text */
+        .main-title {
+            font-size: 2.2rem !important;
+        }
+        .sub-title {
+            font-size: 0.9rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        h3 {
+            font-size: 1.3rem !important;
+        }
+        
+        /* 3. Reduce padding so things fit on screen */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 2rem !important;
+            max-width: 100% !important;
+        }
+        
+        /* 4. Shrink the glowing metric numbers */
+        div[data-testid="stMetricValue"] {
+            font-size: 2.2rem !important;
+        }
+        div[data-testid="metric-container"] {
+            padding: 1rem !important;
+        }
+        
+        /* 5. Make tables less wide */
+        [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
+            padding: 0.5rem !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
