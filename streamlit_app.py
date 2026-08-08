@@ -35,7 +35,7 @@ if bg_image:
             background-image: url("data:image/png;base64,{bg_image}");
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Parallax effect for desktop */
+            background-attachment: fixed; 
             background-repeat: no-repeat;
         }}
         [data-testid="stHeader"] {{
@@ -51,9 +51,14 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Glassmorphism, Layout, & Mobile Responsiveness ---
+# --- 3. Advanced CSS: Desktop & AGGRESSIVE Mobile Overrides ---
 st.markdown(background_css + """
 <style>
+    /* Prevent horizontal scrolling/wobble on the whole app */
+    .stApp {
+        overflow-x: hidden !important;
+    }
+
     /* DESKTOP SPACING & TYPOGRAPHY */
     .block-container {
         padding-top: 2rem !important;
@@ -143,45 +148,58 @@ st.markdown(background_css + """
     }
 
     /* =========================================
-       📱 MOBILE RESPONSIVENESS FIXES 
+       📱 AGGRESSIVE MOBILE FIXES (max-width: 768px)
        ========================================= */
     @media (max-width: 768px) {
-        /* 1. Turn off parallax on mobile (prevents iOS zooming bugs) */
+        /* Fix the background zoom issue completely */
         [data-testid="stAppViewContainer"] {
             background-attachment: scroll !important;
-            background-size: cover !important;
+            background-position: top center !important;
         }
-        
-        /* 2. Shrink massive text */
+
+        /* Tightly control the main container padding */
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-bottom: 3rem !important;
+        }
+
+        /* Squish text significantly for small phone screens */
         .main-title {
-            font-size: 2.2rem !important;
+            font-size: 1.8rem !important;
         }
         .sub-title {
-            font-size: 0.9rem !important;
+            font-size: 0.85rem !important;
             margin-bottom: 1.5rem !important;
+            letter-spacing: 1px !important;
         }
         h3 {
-            font-size: 1.3rem !important;
+            font-size: 1.1rem !important;
+            margin-top: 1rem !important;
         }
-        
-        /* 3. Reduce padding so things fit on screen */
-        .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 2rem !important;
-            max-width: 100% !important;
-        }
-        
-        /* 4. Shrink the glowing metric numbers */
-        div[data-testid="stMetricValue"] {
-            font-size: 2.2rem !important;
-        }
+
+        /* Compact Metric Cards */
         div[data-testid="metric-container"] {
             padding: 1rem !important;
+            border-left: 4px solid #00F6FF !important; /* Thinner line */
         }
-        
-        /* 5. Make tables less wide */
+        div[data-testid="metric-container"] label {
+            font-size: 0.85rem !important;
+        }
+        div[data-testid="stMetricValue"] {
+            font-size: 1.8rem !important; /* Huge reduction so it fits */
+        }
+
+        /* Compact Data Tables */
         [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
             padding: 0.5rem !important;
+        }
+        
+        /* Button scaling */
+        .stButton > button {
+            font-size: 1rem !important;
+            padding: 0.6rem 1rem !important;
         }
     }
 </style>
@@ -294,13 +312,14 @@ if st.button("Initialize Execution Sequence 🚀"):
         xaxis_title="Time Units (ms)", 
         yaxis_title="",
         showlegend=False,
-        height=380,
+        height=350,
         plot_bgcolor='#0B1121', 
         paper_bgcolor='#0B1121', 
         font=dict(color="#F8FAFC"),
         xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
         yaxis=dict(showgrid=False, fixedrange=True),
-        margin=dict(t=40, b=40, l=20, r=20)
+        # Extremely tight margins so the chart doesn't clip on mobile
+        margin=dict(t=20, b=30, l=10, r=10) 
     )
     
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
