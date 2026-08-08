@@ -5,14 +5,14 @@ import plotly.express as px
 # --- 1. Page Setup ---
 st.set_page_config(page_title="SJF Simulator", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. Parallax & Solid Dark Theme CSS ---
+# --- 2. Parallax & Tiered Transparency CSS ---
 st.markdown("""
 <style>
     /* Parallax Background Implementation */
     .stApp {
         /* High-resolution, professional dark tech/abstract background */
         background-image: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop");
-        background-attachment: fixed; /* This creates the parallax scrolling effect */
+        background-attachment: fixed; /* Parallax scrolling effect */
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
@@ -56,13 +56,12 @@ st.markdown("""
         text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
-    /* --- SOLID DARK CONTAINERS (No Transparency) --- */
-    
-    /* Highlighted Metric Boxes (Averages) */
+    /* --- HIGHEST IMPORTANCE: SOLID CONTAINERS --- */
+    /* Highlighted Metric Boxes (Averages) - 100% Solid */
     div[data-testid="metric-container"] {
-        background-color: #0F172A; /* Solid Dark Navy/Slate */
-        border: 2px solid #38BDF8; /* Highlighted Blue Border */
-        border-left: 8px solid #38BDF8; /* Thick accent line */
+        background-color: #0F172A; /* 100% Solid Dark Navy */
+        border: 2px solid #38BDF8; 
+        border-left: 8px solid #38BDF8; 
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
@@ -74,18 +73,21 @@ st.markdown("""
         text-transform: uppercase;
     }
     div[data-testid="stMetricValue"] {
-        color: #38BDF8 !important; /* Bright highlight color for the numbers */
+        color: #38BDF8 !important;
         font-size: 3rem !important;
         font-weight: 800 !important;
     }
 
-    /* Data Tables */
+    /* --- LOWER IMPORTANCE: 50% TRANSPARENT CONTAINERS --- */
+    /* Data Tables - 50% Transparent with slight blur for readability */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background-color: #0F172A; /* Solid Dark Navy/Slate */
+        background-color: rgba(15, 23, 42, 0.5); /* 50% Transparent */
+        backdrop-filter: blur(8px); /* Blurs the background image slightly behind the table */
+        -webkit-backdrop-filter: blur(8px);
         border-radius: 8px;
         padding: 1rem;
-        border: 1px solid #334155;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(51, 65, 85, 0.6); /* Slightly transparent border */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
 
     /* Custom Button */
@@ -183,7 +185,7 @@ if st.button("Initialize Simulation Sequence"):
     results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
     results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
     
-    # Highlighted Averages
+    # Highlighted Averages (Solid background)
     st.subheader("Performance Metrics")
     col1, col2 = st.columns(2)
     col1.metric("Average Waiting Time", f"{results_df['Waiting Time'].mean():.2f}")
@@ -191,11 +193,10 @@ if st.button("Initialize Simulation Sequence"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # Gantt Chart
+    # Gantt Chart (Solid background)
     st.subheader("Execution Timeline")
     df_gantt = pd.DataFrame(gantt_data)
     
-    # Professional color palette
     color_discrete_map = {
         'IDLE': '#334155', 'P1': '#38BDF8', 'P2': '#818CF8', 
         'P3': '#34D399', 'P4': '#F472B6', 'P5': '#FBBF24', 
@@ -219,8 +220,7 @@ if st.button("Initialize Simulation Sequence"):
         yaxis_title="",
         showlegend=False,
         height=350,
-        # Set chart area to solid dark color (No transparency)
-        plot_bgcolor='#0F172A',
+        plot_bgcolor='#0F172A', /* 100% Solid Dark Navy for chart */
         paper_bgcolor='#0F172A',
         font=dict(color="#F8FAFC"),
         xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
@@ -229,6 +229,6 @@ if st.button("Initialize Simulation Sequence"):
     
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    # Final Detailed Table
+    # Final Detailed Table (50% Transparent background applied via CSS above)
     st.subheader("Detailed Calculation Logs")
     st.dataframe(results_df, use_container_width=True, hide_index=True)
