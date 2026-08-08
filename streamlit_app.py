@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import base64
+import os
 
 # --- 1. Page Configuration ---
 st.set_page_config(
@@ -10,22 +12,52 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. Advanced CSS: Parallax & Glassmorphism ---
-st.markdown("""
+# --- 2. Safely Load Your Specific Background Image ---
+@st.cache_data
+def get_base64_of_bin_file(bin_file):
+    try:
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        return None
+
+# Convert your exact screenshot to base64 so CSS can render it
+bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
+
+if bg_image:
+    background_css = f"""
+    <style>
+        /* Target the new Streamlit main container */
+        [data-testid="stAppViewContainer"] {{
+            background-image: url("data:image/png;base64,{bg_image}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Parallax effect */
+            background-repeat: no-repeat;
+        }}
+        /* Make the default top header transparent so the background shows through */
+        [data-testid="stHeader"] {{
+            background: rgba(0,0,0,0);
+        }}
+    </style>
+    """
+else:
+    # Fallback dark background just in case the image isn't in the folder yet
+    st.warning("⚠️ Could not find 'Screenshot 2026-08-08 215442.png'. Make sure it is in the same folder as this script!")
+    background_css = """
+    <style>
+        [data-testid="stAppViewContainer"] { background-color: #0B1121; }
+        [data-testid="stHeader"] { background: rgba(0,0,0,0); }
+    </style>
+    """
+
+# --- 3. Advanced CSS: Glassmorphism & Layout ---
+st.markdown(background_css + """
 <style>
-    /* 1. PARALLAX BACKGROUND */
-    .stApp {
-        /* High-resolution, dark professional geometric texture */
-        background-image: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop");
-        background-attachment: fixed; /* Enables the parallax scroll effect */
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-    }
-    
-    /* 2. PAGE SPACING & TYPOGRAPHY */
+    /* PAGE SPACING & TYPOGRAPHY */
     .block-container {
-        padding-top: 3.5rem !important;
+        padding-top: 2rem !important;
         padding-bottom: 5rem !important;
         max-width: 95% !important;
     }
@@ -56,11 +88,11 @@ st.markdown("""
         margin-top: 2rem !important;
     }
 
-    /* 3. HIGHLIGHTED AVERAGES (100% Solid Dark) */
+    /* HIGHLIGHTED AVERAGES (100% Solid Dark) */
     div[data-testid="metric-container"] {
-        background: #0B1121; /* Solid ultra-dark navy */
+        background: #0B1121; 
         border: 1px solid #1E293B;
-        border-left: 6px solid #00F6FF; /* Neon Cyan Accent */
+        border-left: 6px solid #00F6FF; 
         padding: 1.5rem;
         border-radius: 12px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
@@ -73,16 +105,16 @@ st.markdown("""
         letter-spacing: 1px;
     }
     div[data-testid="stMetricValue"] {
-        color: #00F6FF !important; /* Neon Cyan text */
+        color: #00F6FF !important; 
         font-size: 3.2rem !important;
         font-weight: 900 !important;
         text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
     }
 
-    /* 4. TABLES (60% Transparent for Parallax Effect) */
+    /* TABLES (60% Transparent Glassmorphism) */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background: rgba(11, 17, 33, 0.6); /* 60% Dark Transparency */
-        backdrop-filter: blur(12px); /* Blurs the background image */
+        background: rgba(11, 17, 33, 0.6); 
+        backdrop-filter: blur(12px); 
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
@@ -90,7 +122,7 @@ st.markdown("""
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     }
 
-    /* 5. MODERN BUTTON */
+    /* MODERN BUTTON */
     .stButton > button {
         background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
         color: white;
@@ -113,11 +145,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Header Area ---
+# --- 4. Header Area ---
 st.markdown("<div class='main-title'>SJF Simulator</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Shortest Job First CPU Scheduling</div>", unsafe_allow_html=True)
 
-# --- 4. State Management ---
+# --- 5. State Management ---
 if 'processes' not in st.session_state:
     st.session_state.processes = pd.DataFrame({
         'Process': ['P1', 'P2', 'P3', 'P4'],
@@ -125,12 +157,12 @@ if 'processes' not in st.session_state:
         'Burst Time': [6, 4, 2, 1]
     })
 
-# --- 5. Inputs ---
+# --- 6. Inputs ---
 st.subheader("1. Process Configuration Queue")
 st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-# --- 6. Core Logic ---
+# --- 7. Core Logic ---
 if st.button("Initialize Execution Sequence 🚀"):
     
     processes = []
@@ -180,7 +212,7 @@ if st.button("Initialize Execution Sequence 🚀"):
             else:
                  gantt_data[-1]['Duration'] += 1
 
-    # --- 7. Metric Output ---
+    # --- 8. Metric Output ---
     st.divider()
     
     results_df = pd.DataFrame(processes)
@@ -194,7 +226,7 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 8. Visual Output (Gantt) ---
+    # --- 9. Visual Output (Gantt) ---
     st.subheader("3. Execution Timeline (Gantt Chart)")
     df_gantt = pd.DataFrame(gantt_data)
     
@@ -221,7 +253,7 @@ if st.button("Initialize Execution Sequence 🚀"):
         yaxis_title="",
         showlegend=False,
         height=380,
-        plot_bgcolor='#0B1121', # Solid dark background so chart is easy to read
+        plot_bgcolor='#0B1121', 
         paper_bgcolor='#0B1121', 
         font=dict(color="#F8FAFC"),
         xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
@@ -231,6 +263,6 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    # --- 9. Data Output ---
+    # --- 10. Data Output ---
     st.subheader("4. Detailed Calculation Logs")
     st.dataframe(results_df, use_container_width=True, hide_index=True)
