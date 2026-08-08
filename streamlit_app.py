@@ -15,7 +15,7 @@ st.markdown("""
 <style>
     /* 1. PARALLAX BACKGROUND */
     .stApp {
-        /* Pulls a premium dark tech background directly from the web */
+        /* High-resolution, dark professional geometric texture */
         background-image: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop");
         background-attachment: fixed; /* Enables the parallax scroll effect */
         background-position: center;
@@ -79,7 +79,7 @@ st.markdown("""
         text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
     }
 
-    /* 4. TABLES (50% Transparent Glassmorphism) */
+    /* 4. TABLES (60% Transparent for Parallax Effect) */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
         background: rgba(11, 17, 33, 0.6); /* 60% Dark Transparency */
         backdrop-filter: blur(12px); /* Blurs the background image */
