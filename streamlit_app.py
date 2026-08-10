@@ -60,7 +60,7 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Desktop, Mobile Overrides & Queue Chart Blocks ---
+# --- 3. Advanced CSS: Desktop, Mobile Overrides & Single-Line Queue ---
 st.markdown(background_css + """
 <style>
     html, body {
@@ -152,7 +152,7 @@ st.markdown(background_css + """
     }
 
     /* =========================================
-       📦 VISUAL QUEUE CHART BOXES
+       📦 SINGLE-LINE HORIZONTAL QUEUE CHART
        ========================================= */
     .step-box {
         background: rgba(15, 23, 42, 0.85);
@@ -169,8 +169,25 @@ st.markdown(background_css + """
         gap: 12px;
         margin-top: 12px;
         margin-bottom: 15px;
-        flex-wrap: wrap; /* Wraps to next line on small phones */
+        flex-wrap: nowrap; /* Forces everything into one single line */
+        overflow-x: auto; /* Allows horizontal swiping if it overflows */
+        padding-bottom: 8px; /* Room for scrollbar */
+        -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
     }
+    
+    /* Sleek custom scrollbar for the queue container */
+    .queue-container::-webkit-scrollbar {
+        height: 6px;
+    }
+    .queue-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .queue-container::-webkit-scrollbar-thumb {
+        background: rgba(56, 189, 248, 0.4);
+        border-radius: 10px;
+    }
+
     .queue-box {
         background: #1E293B;
         border: 2px solid #475569;
@@ -180,6 +197,7 @@ st.markdown(background_css + """
         font-weight: 800;
         text-align: center;
         min-width: 80px;
+        flex-shrink: 0; /* Prevents the boxes from shrinking on small screens */
         box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 6px rgba(0,0,0,0.4);
     }
     .queue-box .bt-label {
@@ -190,7 +208,6 @@ st.markdown(background_css + """
         margin-top: 4px;
         text-transform: uppercase;
     }
-    /* Highlight the process picked by SJF */
     .queue-box.selected {
         background: linear-gradient(135deg, #059669 0%, #10B981 100%);
         border-color: #34D399;
@@ -200,7 +217,6 @@ st.markdown(background_css + """
     .queue-box.selected .bt-label {
         color: #ECFDF5;
     }
-    /* Highlight for empty queue */
     .queue-box.idle {
         background: linear-gradient(135deg, #991B1B 0%, #DC2626 100%);
         border-color: #F87171;
@@ -222,7 +238,6 @@ st.markdown(background_css + """
         [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
         .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
         
-        /* Mobile scale down for queue boxes */
         .queue-box { padding: 8px 12px; min-width: 60px; font-size: 0.9rem; }
     }
 </style>
@@ -263,7 +278,7 @@ if st.button("Initialize Execution Sequence 🚀"):
     n = len(processes)
     
     gantt_data = []
-    queue_log = [] # Tracks data for the block-by-block chart
+    queue_log = []
 
     while completed < n:
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
@@ -272,7 +287,6 @@ if st.button("Initialize Execution Sequence 🚀"):
             # Sort by Burst Time (SJF logic)
             available.sort(key=lambda x: (x['bt'], x['at']))
             
-            # Save the queue state to draw boxes later
             queue_state = [{'id': p['id'], 'bt': p['bt']} for p in available]
             current_p = available[0]
             
@@ -284,7 +298,6 @@ if st.button("Initialize Execution Sequence 🚀"):
                 'burst': current_p['bt']
             })
             
-            # Execute
             start_time = current_time
             current_time += current_p['bt']
             
@@ -329,11 +342,10 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Visual Box-by-Box Queue Chart ---
+    # --- 9. Visual Single-Line Queue Chart ---
     st.subheader("3. Dynamic Ready Queue Visualizer")
     st.write("Visualizes the sorted queue blocks. The green block indicates the Shortest Job selected.")
     
-    # Generate the HTML for the blocks dynamically based on python log
     html_content = ""
     for log in queue_log:
         if log['is_idle']:
@@ -351,7 +363,6 @@ if st.button("Initialize Execution Sequence 🚀"):
         else:
             boxes_html = ""
             for i, p in enumerate(log['queue_state']):
-                # The first item in the sorted queue is selected
                 if i == 0: 
                     boxes_html += f"<div class='queue-box selected'>{p['id']}<span class='bt-label'>BT: {p['bt']}</span></div>"
                 else:
@@ -369,7 +380,6 @@ if st.button("Initialize Execution Sequence 🚀"):
             </div>
             """
     
-    # Render all the generated HTML
     st.markdown(html_content, unsafe_allow_html=True)
 
     st.write("<br>", unsafe_allow_html=True)
