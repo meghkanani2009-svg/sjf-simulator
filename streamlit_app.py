@@ -31,7 +31,6 @@ bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
 if bg_image:
     background_css = f"""
     <style>
-        /* The ultimate mobile-safe fixed background trick */
         .stApp::before {{
             content: "";
             position: fixed;
@@ -61,7 +60,7 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Desktop & Mobile Overrides ---
+# --- 3. Advanced CSS: Desktop, Mobile Overrides & Queue Chart Blocks ---
 st.markdown(background_css + """
 <style>
     html, body {
@@ -152,14 +151,59 @@ st.markdown(background_css + """
         color: #00F6FF;
     }
 
-    /* Pedagogical Step Box */
+    /* =========================================
+       📦 VISUAL QUEUE CHART BOXES
+       ========================================= */
     .step-box {
-        background: rgba(11, 17, 33, 0.8);
+        background: rgba(15, 23, 42, 0.85);
         border-left: 4px solid #38BDF8;
         padding: 15px 20px;
-        border-radius: 6px;
+        border-radius: 8px;
         margin-bottom: 15px;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .queue-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+        margin-bottom: 15px;
+        flex-wrap: wrap; /* Wraps to next line on small phones */
+    }
+    .queue-box {
+        background: #1E293B;
+        border: 2px solid #475569;
+        padding: 10px 18px;
+        border-radius: 6px;
+        color: #F8FAFC;
+        font-weight: 800;
+        text-align: center;
+        min-width: 80px;
+        box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 6px rgba(0,0,0,0.4);
+    }
+    .queue-box .bt-label {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        font-weight: 500;
+        display: block;
+        margin-top: 4px;
+        text-transform: uppercase;
+    }
+    /* Highlight the process picked by SJF */
+    .queue-box.selected {
+        background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+        border-color: #34D399;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        transform: scale(1.05);
+    }
+    .queue-box.selected .bt-label {
+        color: #ECFDF5;
+    }
+    /* Highlight for empty queue */
+    .queue-box.idle {
+        background: linear-gradient(135deg, #991B1B 0%, #DC2626 100%);
+        border-color: #F87171;
     }
 
     @media (max-width: 768px) {
@@ -177,6 +221,9 @@ st.markdown(background_css + """
         div[data-testid="stMetricValue"] { font-size: 1.8rem !important; }
         [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
         .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
+        
+        /* Mobile scale down for queue boxes */
+        .queue-box { padding: 8px 12px; min-width: 60px; font-size: 0.9rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -198,7 +245,7 @@ st.subheader("1. Process Configuration Queue")
 st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-# --- 7. Core Logic & Pedagogical Ready Queue ---
+# --- 7. Core Logic & Queue Block Tracker ---
 if st.button("Initialize Execution Sequence 🚀"):
     
     processes = []
@@ -216,27 +263,23 @@ if st.button("Initialize Execution Sequence 🚀"):
     n = len(processes)
     
     gantt_data = []
-    educational_log = [] # New tracking array for step-by-step logic
+    queue_log = [] # Tracks data for the block-by-block chart
 
     while completed < n:
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
-            # 1. Capture unsorted queue for teaching
-            unsorted_str = ", ".join([f"{p['id']} (BT: {p['bt']})" for p in available])
-            
-            # 2. Sort by Burst Time (SJF logic)
+            # Sort by Burst Time (SJF logic)
             available.sort(key=lambda x: (x['bt'], x['at']))
-            sorted_str = " ➔ ".join([f"**{p['id']}**" for p in available])
             
+            # Save the queue state to draw boxes later
+            queue_state = [{'id': p['id'], 'bt': p['bt']} for p in available]
             current_p = available[0]
             
-            # 3. Log the decision pedagogically
-            educational_log.append({
+            queue_log.append({
                 'time': current_time,
                 'is_idle': False,
-                'arrived': unsorted_str,
-                'sorted': sorted_str,
+                'queue_state': queue_state,
                 'selected': current_p['id'],
                 'burst': current_p['bt']
             })
@@ -260,7 +303,7 @@ if st.button("Initialize Execution Sequence 🚀"):
                     break
             completed += 1
         else:
-            educational_log.append({
+            queue_log.append({
                 'time': current_time,
                 'is_idle': True
             })
@@ -286,27 +329,48 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Step-by-Step Educational Ready Queue ---
-    st.subheader("3. Step-by-Step Ready Queue Trace")
-    st.write("Observe how the SJF algorithm evaluates the queue at every scheduling interval:")
+    # --- 9. Visual Box-by-Box Queue Chart ---
+    st.subheader("3. Dynamic Ready Queue Visualizer")
+    st.write("Visualizes the sorted queue blocks. The green block indicates the Shortest Job selected.")
     
-    for log in educational_log:
+    # Generate the HTML for the blocks dynamically based on python log
+    html_content = ""
+    for log in queue_log:
         if log['is_idle']:
-            st.markdown(f"""
+            html_content += f"""
             <div class='step-box'>
-                <span style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</span><br>
-                <span style='color:#EF4444;'>Queue is empty. CPU remains IDLE.</span>
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Evaluation at Time = {log['time']} ms</div>
+                <div class='queue-container'>
+                    <div class='queue-box idle'>IDLE<span class='bt-label'>Empty Queue</span></div>
+                </div>
+                <div style='color:#F87171; font-weight:bold; font-size: 0.95em;'>
+                    ➔ CPU waits. No processes have arrived yet.
+                </div>
             </div>
-            """, unsafe_allow_html=True)
+            """
         else:
-            st.markdown(f"""
+            boxes_html = ""
+            for i, p in enumerate(log['queue_state']):
+                # The first item in the sorted queue is selected
+                if i == 0: 
+                    boxes_html += f"<div class='queue-box selected'>{p['id']}<span class='bt-label'>BT: {p['bt']}</span></div>"
+                else:
+                    boxes_html += f"<div class='queue-box'>{p['id']}<span class='bt-label'>BT: {p['bt']}</span></div>"
+            
+            html_content += f"""
             <div class='step-box'>
-                <span style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</span><br>
-                <b>1. Processes currently in Ready Queue:</b> {log['arrived']}<br>
-                <b>2. SJF Sorting (Shortest Burst First):</b> {log['sorted']}<br>
-                <span style='color:#34D399; font-weight:bold;'>➔ Decision: Process {log['selected']} is dispatched for {log['burst']} ms.</span>
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Evaluation at Time = {log['time']} ms</div>
+                <div class='queue-container'>
+                    {boxes_html}
+                </div>
+                <div style='color:#34D399; font-weight:bold; font-size: 0.95em;'>
+                    ➔ Decision: {log['selected']} is dispatched for {log['burst']} ms.
+                </div>
             </div>
-            """, unsafe_allow_html=True)
+            """
+    
+    # Render all the generated HTML
+    st.markdown(html_content, unsafe_allow_html=True)
 
     st.write("<br>", unsafe_allow_html=True)
 
