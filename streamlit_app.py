@@ -60,7 +60,7 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Desktop, Mobile Overrides & Single-Line Queue ---
+# --- 3. Advanced CSS: Desktop, Mobile Overrides & Textbook Array Style ---
 st.markdown(background_css + """
 <style>
     html, body {
@@ -152,74 +152,67 @@ st.markdown(background_css + """
     }
 
     /* =========================================
-       📦 SINGLE-LINE HORIZONTAL QUEUE CHART
+       📦 TEXTBOOK ARRAY STYLE READY QUEUE
        ========================================= */
     .step-box {
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.7);
         border-left: 4px solid #38BDF8;
         padding: 15px 20px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 15px;
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        border-top: 1px solid rgba(255,255,255,0.05);
+        border-right: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .queue-container {
+    .array-wrapper {
         display: flex;
         align-items: center;
-        gap: 12px;
         margin-top: 12px;
-        margin-bottom: 15px;
-        flex-wrap: nowrap; /* Forces everything into one single line */
-        overflow-x: auto; /* Allows horizontal swiping if it overflows */
-        padding-bottom: 8px; /* Room for scrollbar */
-        -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+        margin-bottom: 8px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .array-label {
+        font-size: 1.1rem;
+        color: #94A3B8;
+        margin-right: 15px;
+        font-family: monospace;
+        white-space: nowrap;
     }
     
-    /* Sleek custom scrollbar for the queue container */
-    .queue-container::-webkit-scrollbar {
-        height: 6px;
-    }
-    .queue-container::-webkit-scrollbar-track {
+    /* The outer box of the array */
+    .array-container {
+        display: inline-flex;
+        border: 2px solid #E2E8F0; /* Thick outer border */
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
     }
-    .queue-container::-webkit-scrollbar-thumb {
-        background: rgba(56, 189, 248, 0.4);
-        border-radius: 10px;
+    
+    /* The individual process cells */
+    .array-cell {
+        padding: 8px 20px;
+        border-right: 2px solid #E2E8F0; /* Vertical dividers */
+        color: #F8FAFC;
+        font-size: 1.2rem;
+        font-weight: bold;
+        min-width: 50px;
+        text-align: center;
+    }
+    
+    /* Remove border from the last cell */
+    .array-cell:last-child {
+        border-right: none;
     }
 
-    .queue-box {
-        background: #1E293B;
-        border: 2px solid #475569;
-        padding: 10px 18px;
-        border-radius: 6px;
-        color: #F8FAFC;
-        font-weight: 800;
-        text-align: center;
-        min-width: 80px;
-        flex-shrink: 0; /* Prevents the boxes from shrinking on small screens */
-        box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 6px rgba(0,0,0,0.4);
+    /* Highlight the selected process slightly */
+    .array-cell.selected {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
     }
-    .queue-box .bt-label {
-        font-size: 0.75rem;
-        color: #94A3B8;
-        font-weight: 500;
-        display: block;
-        margin-top: 4px;
-        text-transform: uppercase;
-    }
-    .queue-box.selected {
-        background: linear-gradient(135deg, #059669 0%, #10B981 100%);
-        border-color: #34D399;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-        transform: scale(1.05);
-    }
-    .queue-box.selected .bt-label {
-        color: #ECFDF5;
-    }
-    .queue-box.idle {
-        background: linear-gradient(135deg, #991B1B 0%, #DC2626 100%);
-        border-color: #F87171;
+
+    .array-cell.idle {
+        color: #F87171;
+        font-weight: normal;
+        font-style: italic;
     }
 
     @media (max-width: 768px) {
@@ -238,7 +231,8 @@ st.markdown(background_css + """
         [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
         .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
         
-        .queue-box { padding: 8px 12px; min-width: 60px; font-size: 0.9rem; }
+        .array-cell { padding: 6px 15px; font-size: 1rem; }
+        .array-label { font-size: 0.9rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -342,21 +336,21 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Visual Single-Line Queue Chart ---
+    # --- 9. Visual Array-Style Ready Queue ---
     st.subheader("3. Dynamic Ready Queue Visualizer")
-    st.write("Visualizes the sorted queue blocks. The green block indicates the Shortest Job selected.")
+    st.write("Displays the state of the queue at each decision point, formatted like a standard array.")
     
     html_content = ""
     for log in queue_log:
         if log['is_idle']:
             html_content += f"""
             <div class='step-box'>
-                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Evaluation at Time = {log['time']} ms</div>
-                <div class='queue-container'>
-                    <div class='queue-box idle'>IDLE<span class='bt-label'>Empty Queue</span></div>
-                </div>
-                <div style='color:#F87171; font-weight:bold; font-size: 0.95em;'>
-                    ➔ CPU waits. No processes have arrived yet.
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
+                <div class='array-wrapper'>
+                    <div class='array-label'>Ready Queue:</div>
+                    <div class='array-container'>
+                        <div class='array-cell idle'>Empty</div>
+                    </div>
                 </div>
             </div>
             """
@@ -364,18 +358,21 @@ if st.button("Initialize Execution Sequence 🚀"):
             boxes_html = ""
             for i, p in enumerate(log['queue_state']):
                 if i == 0: 
-                    boxes_html += f"<div class='queue-box selected'>{p['id']}<span class='bt-label'>BT: {p['bt']}</span></div>"
+                    boxes_html += f"<div class='array-cell selected'>{p['id']}</div>"
                 else:
-                    boxes_html += f"<div class='queue-box'>{p['id']}<span class='bt-label'>BT: {p['bt']}</span></div>"
+                    boxes_html += f"<div class='array-cell'>{p['id']}</div>"
             
             html_content += f"""
             <div class='step-box'>
-                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Evaluation at Time = {log['time']} ms</div>
-                <div class='queue-container'>
-                    {boxes_html}
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
+                <div class='array-wrapper'>
+                    <div class='array-label'>Ready Queue:</div>
+                    <div class='array-container'>
+                        {boxes_html}
+                    </div>
                 </div>
-                <div style='color:#34D399; font-weight:bold; font-size: 0.95em;'>
-                    ➔ Decision: {log['selected']} is dispatched for {log['burst']} ms.
+                <div style='color:#34D399; font-size: 0.9em; margin-top: 5px;'>
+                    ➔ SJF selects {log['selected']} (BT: {log['burst']} ms)
                 </div>
             </div>
             """
