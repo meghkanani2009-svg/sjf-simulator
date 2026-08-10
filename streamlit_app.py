@@ -45,7 +45,6 @@ if bg_image:
             background-repeat: no-repeat;
             z-index: -999;
         }}
-        /* Make sure the main containers are transparent so the background shows */
         [data-testid="stAppViewContainer"], .stApp {{
             background: transparent !important;
         }}
@@ -62,15 +61,13 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Desktop & AGGRESSIVE Mobile Overrides ---
+# --- 3. Advanced CSS: Desktop & Mobile Overrides ---
 st.markdown(background_css + """
 <style>
-    /* Prevent horizontal scrolling/wobble on the whole app */
     html, body {
         overflow-x: hidden !important;
     }
 
-    /* DESKTOP SPACING & TYPOGRAPHY */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 5rem !important;
@@ -103,7 +100,6 @@ st.markdown(background_css + """
         margin-top: 2rem !important;
     }
 
-    /* HIGHLIGHTED AVERAGES */
     div[data-testid="metric-container"] {
         background: #0B1121; 
         border: 1px solid #1E293B;
@@ -126,7 +122,6 @@ st.markdown(background_css + """
         text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
     }
 
-    /* TABLES */
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
         background: rgba(11, 17, 33, 0.6); 
         backdrop-filter: blur(12px); 
@@ -137,7 +132,6 @@ st.markdown(background_css + """
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     }
 
-    /* MODERN BUTTON */
     .stButton > button {
         background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
         color: white;
@@ -158,54 +152,31 @@ st.markdown(background_css + """
         color: #00F6FF;
     }
 
-    /* =========================================
-       📱 AGGRESSIVE MOBILE FIXES (max-width: 768px)
-       ========================================= */
+    /* Pedagogical Step Box */
+    .step-box {
+        background: rgba(11, 17, 33, 0.8);
+        border-left: 4px solid #38BDF8;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
     @media (max-width: 768px) {
-        /* Tightly control the main container padding */
         .block-container {
             padding-top: 1.5rem !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
             padding-bottom: 3rem !important;
         }
-
-        /* Squish text significantly for small phone screens */
-        .main-title {
-            font-size: 1.8rem !important;
-        }
-        .sub-title {
-            font-size: 0.85rem !important;
-            margin-bottom: 1.5rem !important;
-            letter-spacing: 1px !important;
-        }
-        h3 {
-            font-size: 1.1rem !important;
-            margin-top: 1rem !important;
-        }
-
-        /* Compact Metric Cards */
-        div[data-testid="metric-container"] {
-            padding: 1rem !important;
-            border-left: 4px solid #00F6FF !important; /* Thinner line */
-        }
-        div[data-testid="metric-container"] label {
-            font-size: 0.85rem !important;
-        }
-        div[data-testid="stMetricValue"] {
-            font-size: 1.8rem !important; /* Huge reduction so it fits */
-        }
-
-        /* Compact Data Tables */
-        [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-            padding: 0.5rem !important;
-        }
-        
-        /* Button scaling */
-        .stButton > button {
-            font-size: 1rem !important;
-            padding: 0.6rem 1rem !important;
-        }
+        .main-title { font-size: 1.8rem !important; }
+        .sub-title { font-size: 0.85rem !important; margin-bottom: 1.5rem !important; letter-spacing: 1px !important; }
+        h3 { font-size: 1.1rem !important; margin-top: 1rem !important; }
+        div[data-testid="metric-container"] { padding: 1rem !important; border-left: 4px solid #00F6FF !important; }
+        div[data-testid="metric-container"] label { font-size: 0.85rem !important; }
+        div[data-testid="stMetricValue"] { font-size: 1.8rem !important; }
+        [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
+        .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -227,7 +198,7 @@ st.subheader("1. Process Configuration Queue")
 st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-# --- 7. Core Logic & Ready Queue Processing ---
+# --- 7. Core Logic & Pedagogical Ready Queue ---
 if st.button("Initialize Execution Sequence 🚀"):
     
     processes = []
@@ -245,28 +216,32 @@ if st.button("Initialize Execution Sequence 🚀"):
     n = len(processes)
     
     gantt_data = []
-    ready_queue_log = [] # New tracking array for the Ready Queue
+    educational_log = [] # New tracking array for step-by-step logic
 
     while completed < n:
-        # Find all processes that have arrived and are not finished
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
-            # Format the ready queue visually for the logs
-            rq_display = " | ".join([f"{p['id']} (BT:{p['bt']})" for p in available])
+            # 1. Capture unsorted queue for teaching
+            unsorted_str = ", ".join([f"{p['id']} (BT: {p['bt']})" for p in available])
             
-            # Sort by Burst Time first (SJF logic), then Arrival Time if there's a tie
+            # 2. Sort by Burst Time (SJF logic)
             available.sort(key=lambda x: (x['bt'], x['at']))
+            sorted_str = " ➔ ".join([f"**{p['id']}**" for p in available])
+            
             current_p = available[0]
             
-            # Log the decision
-            ready_queue_log.append({
-                'Time Unit': current_time,
-                'Ready Queue State': rq_display,
-                'Selected Process': current_p['id']
+            # 3. Log the decision pedagogically
+            educational_log.append({
+                'time': current_time,
+                'is_idle': False,
+                'arrived': unsorted_str,
+                'sorted': sorted_str,
+                'selected': current_p['id'],
+                'burst': current_p['bt']
             })
             
-            # Execute Process
+            # Execute
             start_time = current_time
             current_time += current_p['bt']
             
@@ -276,7 +251,6 @@ if st.button("Initialize Execution Sequence 🚀"):
                 'Duration': current_p['bt']
             })
             
-            # Update metrics
             for p in processes:
                 if p['id'] == current_p['id']:
                     p['ct'] = current_time
@@ -286,11 +260,9 @@ if st.button("Initialize Execution Sequence 🚀"):
                     break
             completed += 1
         else:
-            # CPU is IDLE
-            ready_queue_log.append({
-                'Time Unit': current_time,
-                'Ready Queue State': "Empty",
-                'Selected Process': "IDLE"
+            educational_log.append({
+                'time': current_time,
+                'is_idle': True
             })
             
             start_time = current_time
@@ -314,12 +286,28 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Ready Queue Trace (NEW FEATURE) ---
-    st.subheader("3. Ready Queue Decision Trace")
-    st.write("This log shows the state of the Ready Queue at every scheduling decision point.")
-    rq_df = pd.DataFrame(ready_queue_log)
-    st.dataframe(rq_df, use_container_width=True, hide_index=True)
+    # --- 9. Step-by-Step Educational Ready Queue ---
+    st.subheader("3. Step-by-Step Ready Queue Trace")
+    st.write("Observe how the SJF algorithm evaluates the queue at every scheduling interval:")
     
+    for log in educational_log:
+        if log['is_idle']:
+            st.markdown(f"""
+            <div class='step-box'>
+                <span style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</span><br>
+                <span style='color:#EF4444;'>Queue is empty. CPU remains IDLE.</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div class='step-box'>
+                <span style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</span><br>
+                <b>1. Processes currently in Ready Queue:</b> {log['arrived']}<br>
+                <b>2. SJF Sorting (Shortest Burst First):</b> {log['sorted']}<br>
+                <span style='color:#34D399; font-weight:bold;'>➔ Decision: Process {log['selected']} is dispatched for {log['burst']} ms.</span>
+            </div>
+            """, unsafe_allow_html=True)
+
     st.write("<br>", unsafe_allow_html=True)
 
     # --- 10. Visual Output (Gantt) ---
