@@ -227,7 +227,7 @@ st.subheader("1. Process Configuration Queue")
 st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-# --- 7. Core Logic ---
+# --- 7. Core Logic & Ready Queue Processing ---
 if st.button("Initialize Execution Sequence 🚀"):
     
     processes = []
@@ -243,15 +243,30 @@ if st.button("Initialize Execution Sequence 🚀"):
     completed = 0
     current_time = 0
     n = len(processes)
+    
     gantt_data = []
+    ready_queue_log = [] # New tracking array for the Ready Queue
 
     while completed < n:
+        # Find all processes that have arrived and are not finished
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
+            # Format the ready queue visually for the logs
+            rq_display = " | ".join([f"{p['id']} (BT:{p['bt']})" for p in available])
+            
+            # Sort by Burst Time first (SJF logic), then Arrival Time if there's a tie
             available.sort(key=lambda x: (x['bt'], x['at']))
             current_p = available[0]
             
+            # Log the decision
+            ready_queue_log.append({
+                'Time Unit': current_time,
+                'Ready Queue State': rq_display,
+                'Selected Process': current_p['id']
+            })
+            
+            # Execute Process
             start_time = current_time
             current_time += current_p['bt']
             
@@ -261,6 +276,7 @@ if st.button("Initialize Execution Sequence 🚀"):
                 'Duration': current_p['bt']
             })
             
+            # Update metrics
             for p in processes:
                 if p['id'] == current_p['id']:
                     p['ct'] = current_time
@@ -270,6 +286,13 @@ if st.button("Initialize Execution Sequence 🚀"):
                     break
             completed += 1
         else:
+            # CPU is IDLE
+            ready_queue_log.append({
+                'Time Unit': current_time,
+                'Ready Queue State': "Empty",
+                'Selected Process': "IDLE"
+            })
+            
             start_time = current_time
             current_time += 1
             if not gantt_data or gantt_data[-1]['Task'] != 'IDLE':
@@ -291,8 +314,16 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Visual Output (Gantt) ---
-    st.subheader("3. Execution Timeline (Gantt Chart)")
+    # --- 9. Ready Queue Trace (NEW FEATURE) ---
+    st.subheader("3. Ready Queue Decision Trace")
+    st.write("This log shows the state of the Ready Queue at every scheduling decision point.")
+    rq_df = pd.DataFrame(ready_queue_log)
+    st.dataframe(rq_df, use_container_width=True, hide_index=True)
+    
+    st.write("<br>", unsafe_allow_html=True)
+
+    # --- 10. Visual Output (Gantt) ---
+    st.subheader("4. Execution Timeline (Gantt Chart)")
     df_gantt = pd.DataFrame(gantt_data)
     
     color_discrete_map = {
@@ -323,12 +354,11 @@ if st.button("Initialize Execution Sequence 🚀"):
         font=dict(color="#F8FAFC"),
         xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
         yaxis=dict(showgrid=False, fixedrange=True),
-        # Extremely tight margins so the chart doesn't clip on mobile
         margin=dict(t=20, b=30, l=10, r=10) 
     )
     
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    # --- 10. Data Output ---
-    st.subheader("4. Detailed Calculation Logs")
+    # --- 11. Data Output ---
+    st.subheader("5. Detailed Calculation Logs")
     st.dataframe(results_df, use_container_width=True, hide_index=True)
