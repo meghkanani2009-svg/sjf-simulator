@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import base64
 import os
 
@@ -60,7 +59,7 @@ else:
     </style>
     """
 
-# --- 3. Advanced CSS: Desktop, Mobile Overrides & Textbook Array Style ---
+# --- 3. Advanced CSS: Desktop, Mobile Overrides & EXACT Textbook Array Style ---
 st.markdown(background_css + """
 <style>
     html, body {
@@ -72,167 +71,90 @@ st.markdown(background_css + """
         padding-bottom: 5rem !important;
         max-width: 95% !important;
     }
-    .main-title {
-        color: #FFFFFF;
-        font-size: 3.5rem;
-        font-weight: 900;
-        text-align: center;
-        text-shadow: 0 8px 16px rgba(0,0,0,0.8);
-        margin-bottom: 0px;
-        letter-spacing: 1px;
-    }
-    .sub-title {
-        color: #38BDF8;
-        font-size: 1.2rem;
-        font-weight: 600;
-        text-align: center;
-        text-shadow: 0 4px 8px rgba(0,0,0,0.8);
-        margin-bottom: 3rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    h3 {
-        color: #F8FAFC !important;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.8);
-        padding-bottom: 10px;
-        border-bottom: 2px solid rgba(255,255,255,0.1);
-        margin-top: 2rem !important;
-    }
+    
+    /* Typography */
+    .main-title { color: #FFFFFF; font-size: 3.5rem; font-weight: 900; text-align: center; margin-bottom: 0px; }
+    .sub-title { color: #38BDF8; font-size: 1.2rem; font-weight: 600; text-align: center; margin-bottom: 3rem; text-transform: uppercase; }
+    h3 { color: #F8FAFC !important; padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); margin-top: 2rem !important; }
 
+    /* Tables & Cards */
     div[data-testid="metric-container"] {
-        background: #0B1121; 
-        border: 1px solid #1E293B;
-        border-left: 6px solid #00F6FF; 
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+        background: rgba(15, 23, 42, 0.85); 
+        border: 1px solid #1E293B; border-left: 6px solid #00F6FF; 
+        padding: 1.5rem; border-radius: 12px;
     }
-    div[data-testid="metric-container"] label {
-        color: #94A3B8 !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    div[data-testid="stMetricValue"] {
-        color: #00F6FF !important; 
-        font-size: 3.2rem !important;
-        font-weight: 900 !important;
-        text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
-    }
-
+    div[data-testid="metric-container"] label { color: #94A3B8 !important; font-weight: 700 !important; text-transform: uppercase; }
+    div[data-testid="stMetricValue"] { color: #00F6FF !important; font-size: 3rem !important; font-weight: 900 !important; }
+    
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background: rgba(11, 17, 33, 0.6); 
-        backdrop-filter: blur(12px); 
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        background: rgba(11, 17, 33, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem;
     }
 
     .stButton > button {
-        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
-        color: white;
-        font-weight: 800;
-        font-size: 1.2rem;
-        padding: 0.8rem 2.5rem;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.2);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 10px;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color: white; font-weight: 800; font-size: 1.2rem; padding: 0.8rem 2.5rem; border-radius: 8px; border: none; width: 100%; margin-top: 10px;
     }
-    .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px rgba(2, 132, 199, 0.6);
-        background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
-        color: #00F6FF;
-    }
+    .stButton > button:hover { background: linear-gradient(135deg, #0369A1 0%, #075985 100%); color: #00F6FF; }
 
     /* =========================================
-       📦 TEXTBOOK ARRAY STYLE READY QUEUE
+       📏 TEXTBOOK STRAIGHT-LINE ARRAY CSS
        ========================================= */
-    .step-box {
-        background: rgba(15, 23, 42, 0.7);
-        border-left: 4px solid #38BDF8;
-        padding: 15px 20px;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        border-top: 1px solid rgba(255,255,255,0.05);
-        border-right: 1px solid rgba(255,255,255,0.05);
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .array-wrapper {
-        display: flex;
-        align-items: center;
-        margin-top: 12px;
-        margin-bottom: 8px;
-        overflow-x: auto;
-        padding-bottom: 5px;
-    }
-    .array-label {
-        font-size: 1.1rem;
-        color: #94A3B8;
-        margin-right: 15px;
-        font-family: monospace;
-        white-space: nowrap;
-    }
-    
-    /* The outer box of the array */
     .array-container {
-        display: inline-flex;
-        border: 2px solid #E2E8F0; /* Thick outer border */
-        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 40px 0 60px 0;
+        overflow-x: auto;
+        padding-bottom: 30px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .array-container::-webkit-scrollbar { height: 8px; }
+    .array-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+    .array-container::-webkit-scrollbar-thumb { background: #38BDF8; border-radius: 10px; }
+
+    .array-box {
+        border: 2px solid #F8FAFC;
+        border-right: none;
+        padding: 15px 35px;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #F8FAFC;
+        position: relative;
+        text-align: center;
+        background: rgba(15, 23, 42, 0.8);
+        min-width: 80px;
+    }
+    .array-box:last-child {
+        border-right: 2px solid #F8FAFC; /* Close the array at the end */
+    }
+    .array-box.idle {
+        color: #F87171;
+        font-style: italic;
     }
     
-    /* The individual process cells */
-    .array-cell {
-        padding: 8px 20px;
-        border-right: 2px solid #E2E8F0; /* Vertical dividers */
-        color: #F8FAFC;
+    /* Timestamps exactly on the dividers */
+    .time-start {
+        position: absolute;
+        bottom: -35px;
+        left: -12px; /* Shifts text left to align under the border */
+        color: #94A3B8;
         font-size: 1.2rem;
         font-weight: bold;
-        min-width: 50px;
-        text-align: center;
     }
-    
-    /* Remove border from the last cell */
-    .array-cell:last-child {
-        border-right: none;
-    }
-
-    /* Highlight the selected process slightly */
-    .array-cell.selected {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34D399;
-    }
-
-    .array-cell.idle {
-        color: #F87171;
-        font-weight: normal;
-        font-style: italic;
+    .time-end {
+        position: absolute;
+        bottom: -35px;
+        right: -12px;
+        color: #94A3B8;
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 
     @media (max-width: 768px) {
-        .block-container {
-            padding-top: 1.5rem !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-            padding-bottom: 3rem !important;
-        }
-        .main-title { font-size: 1.8rem !important; }
-        .sub-title { font-size: 0.85rem !important; margin-bottom: 1.5rem !important; letter-spacing: 1px !important; }
-        h3 { font-size: 1.1rem !important; margin-top: 1rem !important; }
-        div[data-testid="metric-container"] { padding: 1rem !important; border-left: 4px solid #00F6FF !important; }
-        div[data-testid="metric-container"] label { font-size: 0.85rem !important; }
-        div[data-testid="stMetricValue"] { font-size: 1.8rem !important; }
-        [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
-        .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
-        
-        .array-cell { padding: 6px 15px; font-size: 1rem; }
-        .array-label { font-size: 0.9rem; }
+        .block-container { padding-top: 1.5rem !important; padding-left: 1rem !important; padding-right: 1rem !important; padding-bottom: 3rem !important; }
+        .main-title { font-size: 2rem !important; }
+        .sub-title { font-size: 0.9rem !important; }
+        .array-box { padding: 12px 20px; font-size: 1.1rem; min-width: 60px; }
+        .time-start, .time-end { font-size: 1rem; bottom: -30px; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -251,10 +173,9 @@ if 'processes' not in st.session_state:
 
 # --- 6. Inputs ---
 st.subheader("1. Process Configuration Queue")
-st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
-# --- 7. Core Logic & Queue Block Tracker ---
+# --- 7. Core Logic ---
 if st.button("Initialize Execution Sequence 🚀"):
     
     processes = []
@@ -270,27 +191,14 @@ if st.button("Initialize Execution Sequence 🚀"):
     completed = 0
     current_time = 0
     n = len(processes)
-    
     gantt_data = []
-    queue_log = []
 
     while completed < n:
         available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
         if available:
-            # Sort by Burst Time (SJF logic)
             available.sort(key=lambda x: (x['bt'], x['at']))
-            
-            queue_state = [{'id': p['id'], 'bt': p['bt']} for p in available]
             current_p = available[0]
-            
-            queue_log.append({
-                'time': current_time,
-                'is_idle': False,
-                'queue_state': queue_state,
-                'selected': current_p['id'],
-                'burst': current_p['bt']
-            })
             
             start_time = current_time
             current_time += current_p['bt']
@@ -310,11 +218,6 @@ if st.button("Initialize Execution Sequence 🚀"):
                     break
             completed += 1
         else:
-            queue_log.append({
-                'time': current_time,
-                'is_idle': True
-            })
-            
             start_time = current_time
             current_time += 1
             if not gantt_data or gantt_data[-1]['Task'] != 'IDLE':
@@ -336,87 +239,56 @@ if st.button("Initialize Execution Sequence 🚀"):
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # --- 9. Visual Array-Style Ready Queue ---
-    st.subheader("3. Dynamic Ready Queue Visualizer")
-    st.write("Displays the state of the queue at each decision point, formatted like a standard array.")
+    # --- 9. TEXTBOOK STYLE READY QUEUE ---
+    st.subheader("3. Ready Queue Sequence")
+    st.write("The order in which processes entered the CPU, formatted exactly like your notebook.")
     
-    html_content = ""
-    for log in queue_log:
-        if log['is_idle']:
-            html_content += f"""
-            <div class='step-box'>
-                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
-                <div class='array-wrapper'>
-                    <div class='array-label'>Ready Queue:</div>
-                    <div class='array-container'>
-                        <div class='array-cell idle'>Empty</div>
-                    </div>
-                </div>
-            </div>
-            """
-        else:
-            boxes_html = ""
-            for i, p in enumerate(log['queue_state']):
-                if i == 0: 
-                    boxes_html += f"<div class='array-cell selected'>{p['id']}</div>"
-                else:
-                    boxes_html += f"<div class='array-cell'>{p['id']}</div>"
-            
-            html_content += f"""
-            <div class='step-box'>
-                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
-                <div class='array-wrapper'>
-                    <div class='array-label'>Ready Queue:</div>
-                    <div class='array-container'>
-                        {boxes_html}
-                    </div>
-                </div>
-                <div style='color:#34D399; font-size: 0.9em; margin-top: 5px;'>
-                    ➔ SJF selects {log['selected']} (BT: {log['burst']} ms)
-                </div>
-            </div>
-            """
+    rq_html = "<div class='array-container' style='margin-bottom: 20px;'>"
+    # Filter out IDLE times for the ready queue sequence
+    rq_sequence = [t for t in gantt_data if t['Task'] != 'IDLE']
     
-    st.markdown(html_content, unsafe_allow_html=True)
+    if not rq_sequence:
+        rq_html += "<div class='array-box idle' style='border-right: 2px solid #F8FAFC;'>Empty</div>"
+    else:
+        for i, task in enumerate(rq_sequence):
+            # The last box needs a right border to close the array
+            is_last = (i == len(rq_sequence) - 1)
+            border_style = "border-right: 2px solid #F8FAFC;" if is_last else ""
+            rq_html += f"<div class='array-box' style='{border_style}'>{task['Task']}</div>"
+    
+    rq_html += "</div>"
+    st.markdown(rq_html, unsafe_allow_html=True)
 
-    st.write("<br>", unsafe_allow_html=True)
 
-    # --- 10. Visual Output (Gantt) ---
+    # --- 10. TEXTBOOK STYLE GANTT CHART ---
     st.subheader("4. Execution Timeline (Gantt Chart)")
-    df_gantt = pd.DataFrame(gantt_data)
+    st.write("The execution timeline with timestamps exactly underneath the array dividers.")
     
-    color_discrete_map = {
-        'IDLE': '#1E293B', 'P1': '#0EA5E9', 'P2': '#8B5CF6', 
-        'P3': '#10B981', 'P4': '#F43F5E', 'P5': '#F59E0B', 
-        'P6': '#EF4444', 'P7': '#D946EF', 'P8': '#14B8A6', 
-        'P9': '#84CC16', 'P10': '#64748B'
-    }
+    gantt_html = "<div class='array-container'>"
     
-    fig = px.bar(
-        df_gantt, 
-        base="Start", 
-        x="Duration", 
-        y="Task", 
-        color="Task", 
-        orientation='h',
-        text="Task",
-        color_discrete_map=color_discrete_map
-    )
-    
-    fig.update_layout(
-        xaxis_title="Time Units (ms)", 
-        yaxis_title="",
-        showlegend=False,
-        height=350,
-        plot_bgcolor='#0B1121', 
-        paper_bgcolor='#0B1121', 
-        font=dict(color="#F8FAFC"),
-        xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
-        yaxis=dict(showgrid=False, fixedrange=True),
-        margin=dict(t=20, b=30, l=10, r=10) 
-    )
-    
-    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    if not gantt_data:
+        gantt_html += "<div class='array-box idle' style='border-right: 2px solid #F8FAFC;'>No Data</div>"
+    else:
+        for i, task in enumerate(gantt_data):
+            is_last = (i == len(gantt_data) - 1)
+            end_time = task['Start'] + task['Duration']
+            
+            # Print the end time ONLY on the very last box to complete the timeline
+            end_time_html = f"<div class='time-end'>{end_time}</div>" if is_last else ""
+            
+            # Highlight IDLE states in red
+            css_class = "array-box idle" if task['Task'] == 'IDLE' else "array-box"
+            
+            gantt_html += f"""
+            <div class='{css_class}'>
+                {task['Task']}
+                <div class='time-start'>{task['Start']}</div>
+                {end_time_html}
+            </div>
+            """
+            
+    gantt_html += "</div>"
+    st.markdown(gantt_html, unsafe_allow_html=True)
 
     # --- 11. Data Output ---
     st.subheader("5. Detailed Calculation Logs")
