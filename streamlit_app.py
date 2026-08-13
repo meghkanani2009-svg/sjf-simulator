@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 
@@ -10,14 +11,97 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. "SERENE" LUXURY WELLNESS THEME CSS ---
+# --- 2. LITHOS DYNAMIC SPOTLIGHT BACKGROUND INJECTOR ---
+lithos_bg_html = """
+<script>
+const pDoc = window.parent.document;
+if (!pDoc.getElementById('lithos-bg')) {
+    const bgContainer = pDoc.createElement('div');
+    bgContainer.id = 'lithos-bg';
+    Object.assign(bgContainer.style, {
+        position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh', zIndex: '-999', pointerEvents: 'none'
+    });
+
+    const bg1 = pDoc.createElement('div');
+    Object.assign(bg1.style, {
+        position: 'absolute', inset: '0', 
+        background: 'url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85") center/cover no-repeat'
+    });
+
+    const bg2 = pDoc.createElement('div');
+    Object.assign(bg2.style, {
+        position: 'absolute', inset: '0', 
+        background: 'url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85") center/cover no-repeat'
+    });
+
+    bgContainer.appendChild(bg1);
+    bgContainer.appendChild(bg2);
+    pDoc.body.prepend(bgContainer);
+
+    const canvas = pDoc.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const SPOTLIGHT_R = 260;
+
+    let mouse = { x: -999, y: -999 };
+    let smooth = { x: -999, y: -999 };
+
+    function resize() {
+        canvas.width = window.parent.innerWidth;
+        canvas.height = window.parent.innerHeight;
+    }
+    window.parent.addEventListener('resize', resize);
+    resize();
+
+    pDoc.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        if (smooth.x === -999) {
+            smooth.x = e.clientX;
+            smooth.y = e.clientY;
+        }
+    });
+
+    function renderLoop() {
+        if (smooth.x !== -999) {
+            smooth.x += (mouse.x - smooth.x) * 0.1;
+            smooth.y += (mouse.y - smooth.y) * 0.1;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const gradient = ctx.createRadialGradient(smooth.x, smooth.y, 0, smooth.x, smooth.y, SPOTLIGHT_R);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.4, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.6, 'rgba(255,255,255,0.75)');
+            gradient.addColorStop(0.75, 'rgba(255,255,255,0.4)');
+            gradient.addColorStop(0.88, 'rgba(255,255,255,0.12)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(smooth.x, smooth.y, SPOTLIGHT_R, 0, Math.PI * 2);
+            ctx.fill();
+
+            const maskUrl = canvas.toDataURL();
+            bg2.style.maskImage = `url(${maskUrl})`;
+            bg2.style.webkitMaskImage = `url(${maskUrl})`;
+            bg2.style.maskSize = '100% 100%';
+            bg2.style.webkitMaskSize = '100% 100%';
+        }
+        window.parent.requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
+}
+</script>
+"""
+components.html(lithos_bg_html, width=0, height=0)
+
+# --- 3. "SERENE" LUXURY WELLNESS THEME CSS ---
 st.markdown("""
 <style>
     /* Import Luxury Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-    /* Global Dark Background & Fonts */
-    [data-testid="stAppViewContainer"], .stApp { background-color: #0a0608 !important; font-family: 'Inter', sans-serif; }
+    /* Transparent Backgrounds for Lithos Injection */
+    [data-testid="stAppViewContainer"], .stApp { background-color: transparent !important; font-family: 'Inter', sans-serif; }
     [data-testid="stHeader"] { background: rgba(0,0,0,0) !important; }
 
     html, body { overflow-x: hidden !important; color: white; font-family: 'Inter', sans-serif; }
@@ -31,7 +115,7 @@ st.markdown("""
         text-shadow: 0 0 40px rgba(255, 255, 255, 0.4), 0 0 80px rgba(255, 255, 255, 0.2), 0 0 120px rgba(255, 255, 255, 0.1);
     }
     .sub-title { 
-        color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 300; text-align: center; margin-bottom: 3.5rem; 
+        color: rgba(255,255,255,0.8); font-size: 0.9rem; font-weight: 300; text-align: center; margin-bottom: 3.5rem; 
         text-transform: uppercase; letter-spacing: 3px; font-family: 'Inter', sans-serif; margin-top: 1.5rem;
     }
     h3 { 
@@ -42,23 +126,23 @@ st.markdown("""
 
     /* Liquid Glass Containers */
     div[data-testid="metric-container"], [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background: rgba(255, 255, 255, 0.02) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
         background-blend-mode: luminosity;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
         border-radius: 16px !important;
         padding: 1.5rem;
     }
     
     div[data-testid="metric-container"] { border-left: none !important; }
-    div[data-testid="metric-container"] label { color: rgba(255,255,255,0.6) !important; font-weight: 400 !important; font-size: 0.85rem !important; text-transform: uppercase; letter-spacing: 2px; }
+    div[data-testid="metric-container"] label { color: rgba(255,255,255,0.7) !important; font-weight: 400 !important; font-size: 0.85rem !important; text-transform: uppercase; letter-spacing: 2px; }
     div[data-testid="stMetricValue"] { color: #FFFFFF !important; font-size: 3.5rem !important; font-weight: normal !important; font-family: 'Instrument Serif', serif; text-shadow: 0 0 30px rgba(255, 255, 255, 0.2); }
 
     /* Button Glow (White Pill) */
     .stButton > button {
-        background: #FFFFFF !important; color: #0a0608 !important; font-weight: 500 !important; font-size: 1rem !important; 
+        background: #FFFFFF !important; color: #000000 !important; font-weight: 500 !important; font-size: 1rem !important; 
         padding: 1rem 2.5rem !important; border-radius: 9999px !important; border: none !important; width: 100%; margin-top: 10px; 
         box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
         font-family: 'Inter', sans-serif; letter-spacing: 0.05em; transition: all 0.3s ease;
@@ -70,19 +154,19 @@ st.markdown("""
 
     /* Ready Queue Styles (Minimalist Glass) */
     .step-box { 
-        background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); 
-        border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 12px; margin-bottom: 20px; 
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 12px; margin-bottom: 20px; 
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     .array-wrapper { display: flex; align-items: center; margin: 15px 0; overflow-x: auto; padding-bottom: 5px; }
-    .array-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-right: 20px; font-weight: 400; white-space: nowrap; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 1.5px;}
-    .array-container { display: inline-flex; border: 1px solid rgba(255,255,255,0.2); background: rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; }
+    .array-label { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-right: 20px; font-weight: 400; white-space: nowrap; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 1.5px;}
+    .array-container { display: inline-flex; border: 1px solid rgba(255,255,255,0.3); background: rgba(0, 0, 0, 0.4); border-radius: 8px; overflow: hidden; }
     .array-cell { padding: 12px 28px; border-right: 1px solid rgba(255,255,255,0.2); color: #FFFFFF; font-size: 1.5rem; font-weight: normal; min-width: 70px; text-align: center; font-family: 'Instrument Serif', serif;}
     .array-cell:last-child { border-right: none; }
     
     /* Highlighted Queue Cell */
-    .array-cell.selected { background: rgba(255, 255, 255, 0.15); color: #FFFFFF; text-shadow: 0 0 15px rgba(255,255,255,0.5); }
-    .array-cell.idle { color: rgba(255,255,255,0.3); font-style: italic; }
+    .array-cell.selected { background: rgba(255, 255, 255, 0.25); color: #FFFFFF; text-shadow: 0 0 15px rgba(255,255,255,0.6); }
+    .array-cell.idle { color: rgba(255,255,255,0.4); font-style: italic; }
 
     @media (max-width: 768px) {
         .block-container { padding: 1.5rem 1rem 3rem 1rem !important; }
@@ -204,12 +288,12 @@ if st.button("Begin your sequence"):
                 if log['is_idle']:
                     html_content += f"""
                     <div class='step-box'>
-                        <div style='color:rgba(255,255,255,0.8); font-family: "Instrument Serif", serif; font-size: 1.5rem; margin-bottom:8px;'>Time {log['time']} ms</div>
+                        <div style='color:rgba(255,255,255,0.9); font-family: "Instrument Serif", serif; font-size: 1.5rem; margin-bottom:8px;'>Time {log['time']} ms</div>
                         <div class='array-wrapper'>
                             <div class='array-label'>Queue State</div>
                             <div class='array-container'><div class='array-cell idle'>Empty</div></div>
                         </div>
-                        <div style='color:rgba(255,255,255,0.5); font-weight:300; font-size: 0.9em; letter-spacing: 0.5px;'>Silence. Awaiting processes.</div>
+                        <div style='color:rgba(255,255,255,0.6); font-weight:300; font-size: 0.9em; letter-spacing: 0.5px;'>Silence. Awaiting processes.</div>
                     </div>
                     """
                 else:
@@ -222,7 +306,7 @@ if st.button("Begin your sequence"):
                     
                     html_content += f"""
                     <div class='step-box'>
-                        <div style='color:rgba(255,255,255,0.8); font-family: "Instrument Serif", serif; font-size: 1.5rem; margin-bottom:8px;'>Time {log['time']} ms</div>
+                        <div style='color:rgba(255,255,255,0.9); font-family: "Instrument Serif", serif; font-size: 1.5rem; margin-bottom:8px;'>Time {log['time']} ms</div>
                         <div class='array-wrapper'>
                             <div class='array-label'>Queue State</div>
                             <div class='array-container'>{cells_html}</div>
@@ -247,13 +331,13 @@ if st.button("Begin your sequence"):
                     color="Task", 
                     orientation='h', 
                     text="Task",
-                    color_discrete_sequence=['#ffffff', '#cccccc', '#999999', '#666666', '#333333'] # Sleek greyscale palette
+                    color_discrete_sequence=['#ffffff', '#cccccc', '#999999', '#666666', '#333333']
                 )
                 
                 fig.update_yaxes(autorange="reversed")
                 fig.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)", 
-                    plot_bgcolor="rgba(255,255,255,0.02)",
+                    plot_bgcolor="rgba(0,0,0,0.3)",
                     font_color="#FFFFFF", 
                     font_family="Inter",
                     xaxis_title="Timeline (ms)", 
@@ -262,8 +346,8 @@ if st.button("Begin your sequence"):
                     margin=dict(l=20, r=20, t=40, b=20),
                     showlegend=False
                 )
-                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.08)")
-                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.08)")
+                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.15)")
+                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.15)")
                 
                 st.plotly_chart(fig, use_container_width=True)
 
