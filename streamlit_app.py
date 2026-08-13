@@ -12,7 +12,6 @@ st.set_page_config(
 )
 
 # --- 2. LITHOS DYNAMIC SPOTLIGHT BACKGROUND INJECTOR ---
-# This injects the JS cursor-tracking background behind Streamlit
 lithos_bg_html = """
 <script>
 const pDoc = window.parent.document;
@@ -95,52 +94,57 @@ if (!pDoc.getElementById('lithos-bg')) {
 """
 components.html(lithos_bg_html, width=0, height=0)
 
-# --- 3. Advanced CSS Styles (Includes Transparency for Background) ---
+# --- 3. LITHOS-THEMED CSS FOR STREAMLIT ---
 st.markdown("""
 <style>
-    /* Make Streamlit background transparent so Lithos shows through */
+    /* Transparent backgrounds to show Lithos */
     [data-testid="stAppViewContainer"], .stApp { background: transparent !important; }
     [data-testid="stHeader"] { background: rgba(0,0,0,0) !important; }
 
     html, body { overflow-x: hidden !important; }
     .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 95% !important; }
     
-    .main-title { color: #FFFFFF; font-size: 3.5rem; font-weight: 900; text-align: center; margin-bottom: 0px; text-shadow: 0 8px 16px rgba(0,0,0,0.8); }
-    .sub-title { color: #38BDF8; font-size: 1.2rem; font-weight: 600; text-align: center; margin-bottom: 3rem; text-transform: uppercase; text-shadow: 0 4px 8px rgba(0,0,0,0.8); }
-    h3 { color: #F8FAFC !important; padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); margin-top: 2rem !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+    /* Typography matching Lithos vibe */
+    .main-title { color: #FFFFFF; font-size: 3.5rem; font-weight: 900; text-align: center; margin-bottom: 0px; text-shadow: 0 8px 16px rgba(0,0,0,0.9); font-family: 'Playfair Display', serif; font-style: italic; }
+    .sub-title { color: #e8702a; font-size: 1.2rem; font-weight: 600; text-align: center; margin-bottom: 3rem; text-transform: uppercase; text-shadow: 0 4px 8px rgba(0,0,0,0.9); letter-spacing: 2px; }
+    h3 { color: #F8FAFC !important; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-top: 2rem !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
 
+    /* Dark frosted glass containers */
     div[data-testid="metric-container"] {
-        background: rgba(11, 17, 33, 0.85); border: 1px solid #1E293B; border-left: 6px solid #00F6FF; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+        background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); 
+        border-left: 6px solid #e8702a; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
-    div[data-testid="metric-container"] label { color: #94A3B8 !important; font-weight: 700 !important; font-size: 1.1rem !important; text-transform: uppercase; }
-    div[data-testid="stMetricValue"] { color: #00F6FF !important; font-size: 3.2rem !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(0, 246, 255, 0.3); }
+    div[data-testid="metric-container"] label { color: #94A3B8 !important; font-weight: 600 !important; font-size: 1rem !important; text-transform: uppercase; }
+    div[data-testid="stMetricValue"] { color: #e8702a !important; font-size: 3.2rem !important; font-weight: 900 !important; text-shadow: 0 0 15px rgba(232, 112, 42, 0.3); }
 
     [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
-        background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+        background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; box-shadow: 0 12px 30px rgba(0,0,0,0.8);
     }
 
+    /* Amber Lithos Button */
     .stButton > button {
-        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color: white; font-weight: 800; font-size: 1.2rem; padding: 0.8rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); width: 100%; margin-top: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        background: linear-gradient(135deg, #e8702a 0%, #c2571a 100%); color: white; font-weight: 800; font-size: 1.2rem; padding: 0.8rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 100%; margin-top: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); transition: all 0.3s ease;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #0369A1 0%, #075985 100%); color: #00F6FF; transform: translateY(-3px);
+        background: linear-gradient(135deg, #f08343 0%, #d2611f 100%); transform: translateY(-3px); box-shadow: 0 12px 25px rgba(232, 112, 42, 0.4); color: white;
     }
 
-    /* Ready Queue Styles */
-    .step-box { background: rgba(15, 23, 42, 0.75); border-left: 4px solid #38BDF8; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    /* Ready Queue Styles (Earthy Tones) */
+    .step-box { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); border-left: 4px solid #e8702a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
     .array-wrapper { display: flex; align-items: center; margin: 15px 0; overflow-x: auto; padding-bottom: 5px; }
     .array-label { font-size: 1.1rem; color: #94A3B8; margin-right: 20px; font-weight: 600; white-space: nowrap; }
-    .array-container { display: inline-flex; border: 2px solid #E2E8F0; background: rgba(255, 255, 255, 0.03); border-radius: 4px; }
-    .array-cell { padding: 10px 24px; border-right: 2px solid #E2E8F0; color: #F8FAFC; font-size: 1.3rem; font-weight: bold; min-width: 60px; text-align: center; }
+    .array-container { display: inline-flex; border: 2px solid rgba(255,255,255,0.1); background: rgba(0, 0, 0, 0.4); border-radius: 4px; }
+    .array-cell { padding: 10px 24px; border-right: 2px solid rgba(255,255,255,0.1); color: #F8FAFC; font-size: 1.3rem; font-weight: bold; min-width: 60px; text-align: center; }
     .array-cell:last-child { border-right: none; }
-    .array-cell.selected { background: rgba(16, 185, 129, 0.25); color: #34D399; border: 2px solid #34D399; }
-    .array-cell.idle { color: #F87171; font-style: italic; }
+    
+    /* Highlighted Queue Cell matches Lithos Accent */
+    .array-cell.selected { background: rgba(232, 112, 42, 0.2); color: #e8702a; border: 2px solid #e8702a; box-shadow: inset 0 0 10px rgba(232, 112, 42, 0.2); }
+    .array-cell.idle { color: #64748b; font-style: italic; }
 
     @media (max-width: 768px) {
         .block-container { padding: 1.5rem 1rem 3rem 1rem !important; }
-        .main-title { font-size: 1.8rem !important; }
-        .sub-title { font-size: 0.85rem !important; }
-        .array-cell { padding: 8px 16px; font-size: 1.1rem; }
+        .main-title { font-size: 2.2rem !important; }
+        .sub-title { font-size: 0.9rem !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -159,7 +163,6 @@ if 'processes' not in st.session_state:
 
 # --- 6. Inputs ---
 st.subheader("1. Process Configuration Queue")
-st.write("Adjust the parameters below. The environment will update dynamically.")
 edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
 
 # --- 7. Core Execution Logic ---
@@ -212,8 +215,10 @@ if st.button("Initialize Execution Sequence 🚀"):
                     current_time += current_p['bt']
                     
                     gantt_data.append({
-                        'Task': current_p['id'], 'Start': start_time, 
-                        'Finish': current_time, 'Duration': current_p['bt']
+                        'Task': current_p['id'], 
+                        'Start': start_time, 
+                        'Finish': current_time, 
+                        'Duration': current_p['bt']
                     })
                     
                     for p in processes:
@@ -249,7 +254,6 @@ if st.button("Initialize Execution Sequence 🚀"):
             
             # --- 9. Dynamic Ready Queue Visualizer ---
             st.subheader("3. Dynamic Ready Queue Visualizer")
-            st.write("Displays the state of the queue at each decision point, formatted like a standard array.")
             
             html_content = ""
             for log in queue_log:
@@ -261,7 +265,7 @@ if st.button("Initialize Execution Sequence 🚀"):
                             <div class='array-label'>Ready Queue:</div>
                             <div class='array-container'><div class='array-cell idle'>Empty</div></div>
                         </div>
-                        <div style='color:#F87171; font-weight:500; font-size: 0.95em;'>➔ CPU waits. No processes have arrived yet.</div>
+                        <div style='color:#64748b; font-weight:500; font-size: 0.95em;'>➔ CPU waits. No processes have arrived yet.</div>
                     </div>
                     """
                 else:
@@ -279,26 +283,44 @@ if st.button("Initialize Execution Sequence 🚀"):
                             <div class='array-label'>Ready Queue:</div>
                             <div class='array-container'>{cells_html}</div>
                         </div>
-                        <div style='color:#34D399; font-weight:600; font-size: 0.95em;'>➔ SJF selects {log['selected']} (BT: {log['burst']} ms)</div>
+                        <div style='color:#e8702a; font-weight:600; font-size: 0.95em;'>➔ SJF selects {log['selected']} (BT: {log['burst']} ms)</div>
                     </div>
                     """
             st.markdown(html_content, unsafe_allow_html=True)
             st.write("<br>", unsafe_allow_html=True)
 
-            # --- 10. Interactive Plotly Gantt Chart ---
+            # --- 10. FIXED Plotly Gantt Chart ---
             st.subheader("4. Execution Timeline (Gantt Chart)")
             
             if gantt_data:
                 df_gantt = pd.DataFrame(gantt_data)
-                fig = px.timeline(df_gantt, x_start="Start", x_end="Finish", y="Task", color="Task", text="Task")
+                
+                # Using px.bar with base offset to fix the integer timeline issue perfectly
+                fig = px.bar(
+                    df_gantt, 
+                    x="Duration", 
+                    y="Task", 
+                    base="Start", 
+                    color="Task", 
+                    orientation='h', 
+                    text="Task",
+                    color_discrete_sequence=['#e8702a', '#f39c6b', '#c2571a', '#8f3e10', '#4a4a4a']
+                )
+                
                 fig.update_yaxes(autorange="reversed")
                 fig.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(15, 23, 42, 0.8)",
-                    font_color="#F8FAFC", xaxis_title="Timeline (ms)", yaxis_title="Processes", height=300,
-                    margin=dict(l=20, r=20, t=20, b=20)
+                    paper_bgcolor="rgba(0,0,0,0)", 
+                    plot_bgcolor="rgba(10, 10, 10, 0.75)",
+                    font_color="#F8FAFC", 
+                    xaxis_title="Timeline (ms)", 
+                    yaxis_title="Processes", 
+                    height=300,
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    showlegend=False
                 )
-                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.1)")
-                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.1)")
+                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.05)")
+                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="rgba(255,255,255,0.05)")
+                
                 st.plotly_chart(fig, use_container_width=True)
 
             # --- 11. Detailed Logs ---
