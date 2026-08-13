@@ -1,175 +1,423 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import pandas as pd
+import plotly.express as px
+import base64
+import os
 
 # --- 1. Page Configuration ---
-st.set_page_config(page_title="Lithos Geology", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="SJF CPU Scheduling Pro", 
+    page_icon="⏱️", 
+    layout="wide", 
+    initial_sidebar_state="collapsed"
+)
 
-# --- 2. Hide Streamlit UI for Full-Screen Effect ---
-st.markdown("""
+# --- 2. Safely Load Your Specific Background Image ---
+@st.cache_data
+def get_base64_of_bin_file(bin_file):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, bin_file)
+    
+    try:
+        with open(file_path, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        st.error(f"⚠️ Looked for the image here, but couldn't find it: {file_path}")
+        return None
+
+bg_image = get_base64_of_bin_file("Screenshot 2026-08-08 215442.png")
+
+if bg_image:
+    background_css = f"""
     <style>
-        /* Hide top header, footer, and remove all padding */
-        [data-testid="stHeader"] { visibility: hidden; }
-        footer { visibility: hidden; }
-        .block-container { padding: 0 !important; max-width: 100% !important; overflow: hidden !important; }
-        
-        /* Make the iframe take up the full screen */
-        iframe {
-            width: 100vw !important;
-            height: 100vh !important;
-            border: none !important;
-            display: block;
-        }
+        .stApp::before {{
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("data:image/png;base64,{bg_image}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -999;
+        }}
+        [data-testid="stAppViewContainer"], .stApp {{
+            background: transparent !important;
+        }}
+        [data-testid="stHeader"] {{
+            background: rgba(0,0,0,0) !important;
+        }}
     </style>
+    """
+else:
+    background_css = """
+    <style>
+        [data-testid="stAppViewContainer"] { background-color: #0B1121; }
+        [data-testid="stHeader"] { background: rgba(0,0,0,0); }
+    </style>
+    """
+
+# --- 3. Advanced CSS: Desktop, Mobile Overrides & Textbook Array Style ---
+st.markdown(background_css + """
+<style>
+    html, body {
+        overflow-x: hidden !important;
+    }
+
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 5rem !important;
+        max-width: 95% !important;
+    }
+    .main-title {
+        color: #FFFFFF;
+        font-size: 3.5rem;
+        font-weight: 900;
+        text-align: center;
+        text-shadow: 0 8px 16px rgba(0,0,0,0.8);
+        margin-bottom: 0px;
+        letter-spacing: 1px;
+    }
+    .sub-title {
+        color: #38BDF8;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.8);
+        margin-bottom: 3rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    h3 {
+        color: #F8FAFC !important;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(255,255,255,0.1);
+        margin-top: 2rem !important;
+    }
+
+    div[data-testid="metric-container"] {
+        background: #0B1121; 
+        border: 1px solid #1E293B;
+        border-left: 6px solid #00F6FF; 
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    }
+    div[data-testid="metric-container"] label {
+        color: #94A3B8 !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #00F6FF !important; 
+        font-size: 3.2rem !important;
+        font-weight: 900 !important;
+        text-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
+    }
+
+    [data-testid="stDataEditor"], [data-testid="stDataFrame"] {
+        background: rgba(11, 17, 33, 0.6); 
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .stButton > button {
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: white;
+        font-weight: 800;
+        font-size: 1.2rem;
+        padding: 0.8rem 2.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+    }
+    .stButton > button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(2, 132, 199, 0.6);
+        background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
+        color: #00F6FF;
+    }
+
+    /* =========================================
+       📦 TEXTBOOK ARRAY STYLE READY QUEUE
+       ========================================= */
+    .step-box {
+        background: rgba(15, 23, 42, 0.7);
+        border-left: 4px solid #38BDF8;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        border-right: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .array-wrapper {
+        display: flex;
+        align-items: center;
+        margin-top: 12px;
+        margin-bottom: 8px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .array-label {
+        font-size: 1.1rem;
+        color: #94A3B8;
+        margin-right: 15px;
+        font-family: monospace;
+        white-space: nowrap;
+    }
+    
+    /* The outer box of the array */
+    .array-container {
+        display: inline-flex;
+        border: 2px solid #E2E8F0; /* Thick outer border */
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* The individual process cells */
+    .array-cell {
+        padding: 8px 20px;
+        border-right: 2px solid #E2E8F0; /* Vertical dividers */
+        color: #F8FAFC;
+        font-size: 1.2rem;
+        font-weight: bold;
+        min-width: 50px;
+        text-align: center;
+    }
+    
+    /* Remove border from the last cell */
+    .array-cell:last-child {
+        border-right: none;
+    }
+
+    /* Highlight the selected process slightly */
+    .array-cell.selected {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+    }
+
+    .array-cell.idle {
+        color: #F87171;
+        font-weight: normal;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-bottom: 3rem !important;
+        }
+        .main-title { font-size: 1.8rem !important; }
+        .sub-title { font-size: 0.85rem !important; margin-bottom: 1.5rem !important; letter-spacing: 1px !important; }
+        h3 { font-size: 1.1rem !important; margin-top: 1rem !important; }
+        div[data-testid="metric-container"] { padding: 1rem !important; border-left: 4px solid #00F6FF !important; }
+        div[data-testid="metric-container"] label { font-size: 0.85rem !important; }
+        div[data-testid="stMetricValue"] { font-size: 1.8rem !important; }
+        [data-testid="stDataEditor"], [data-testid="stDataFrame"] { padding: 0.5rem !important; }
+        .stButton > button { font-size: 1rem !important; padding: 0.6rem 1rem !important; }
+        
+        .array-cell { padding: 6px 15px; font-size: 1rem; }
+        .array-label { font-size: 0.9rem; }
+    }
+</style>
 """, unsafe_allow_html=True)
 
-# --- 3. The Complete HTML/CSS/JS (Translated from React) ---
-lithos_html = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+# --- 4. Header Area ---
+st.markdown("<div class='main-title'>SJF Simulator</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Shortest Job First CPU Scheduling</div>", unsafe_allow_html=True)
+
+# --- 5. State Management ---
+if 'processes' not in st.session_state:
+    st.session_state.processes = pd.DataFrame({
+        'Process': ['P1', 'P2', 'P3', 'P4'],
+        'Arrival Time': [0, 1, 2, 3],
+        'Burst Time': [6, 4, 2, 1]
+    })
+
+# --- 6. Inputs ---
+st.subheader("1. Process Configuration Queue")
+st.write("Adjust the parameters below. The environment will update dynamically.")
+edited_df = st.data_editor(st.session_state.processes, num_rows="dynamic", use_container_width=True)
+
+# --- 7. Core Logic & Queue Block Tracker ---
+if st.button("Initialize Execution Sequence 🚀"):
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap');
+    processes = []
+    for i, row in edited_df.iterrows():
+        processes.append({
+            'id': str(row['Process']),
+            'at': int(row['Arrival Time']),
+            'bt': int(row['Burst Time']),
+            'ct': 0, 'tat': 0, 'wt': 0,
+            'is_completed': False
+        })
+    
+    completed = 0
+    current_time = 0
+    n = len(processes)
+    
+    gantt_data = []
+    queue_log = []
+
+    while completed < n:
+        available = [p for p in processes if p['at'] <= current_time and not p['is_completed']]
         
-        * { font-family: 'Inter', sans-serif; }
-        .font-playfair { font-family: 'Playfair Display', serif; }
-        
-        @keyframes heroReveal { 0%{opacity:0;transform:translateY(28px);filter:blur(12px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
-        @keyframes heroFadeUp { 0%{opacity:0;transform:translateY(20px)} 100%{opacity:1;transform:translateY(0)} }
-        @keyframes heroZoom { 0%{transform:scale(1.12)} 100%{transform:scale(1)} }
-        
-        .hero-anim { opacity:0; animation-fill-mode:forwards; animation-timing-function:cubic-bezier(0.16,1,0.3,1); }
-        .hero-reveal { animation-name:heroReveal; animation-duration:1.1s; }
-        .hero-fade { animation-name:heroFadeUp; animation-duration:1s; }
-        .hero-zoom { animation:heroZoom 1.8s cubic-bezier(0.16,1,0.3,1) forwards; }
-        
-        @media (prefers-reduced-motion: reduce){ .hero-anim,.hero-zoom{ animation:none; opacity:1; } }
-    </style>
-</head>
-<body class="m-0 p-0 overflow-hidden min-h-screen bg-white tracking-[-0.02em]">
+        if available:
+            # Sort by Burst Time (SJF logic)
+            available.sort(key=lambda x: (x['bt'], x['at']))
+            
+            queue_state = [{'id': p['id'], 'bt': p['bt']} for p in available]
+            current_p = available[0]
+            
+            queue_log.append({
+                'time': current_time,
+                'is_idle': False,
+                'queue_state': queue_state,
+                'selected': current_p['id'],
+                'burst': current_p['bt']
+            })
+            
+            start_time = current_time
+            current_time += current_p['bt']
+            
+            gantt_data.append({
+                'Task': current_p['id'], 
+                'Start': start_time, 
+                'Duration': current_p['bt']
+            })
+            
+            for p in processes:
+                if p['id'] == current_p['id']:
+                    p['ct'] = current_time
+                    p['tat'] = p['ct'] - p['at']
+                    p['wt'] = p['tat'] - p['bt']
+                    p['is_completed'] = True
+                    break
+            completed += 1
+        else:
+            queue_log.append({
+                'time': current_time,
+                'is_idle': True
+            })
+            
+            start_time = current_time
+            current_time += 1
+            if not gantt_data or gantt_data[-1]['Task'] != 'IDLE':
+                 gantt_data.append({'Task': 'IDLE', 'Start': start_time, 'Duration': 1})
+            else:
+                 gantt_data[-1]['Duration'] += 1
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between p-4 sm:p-5">
-        <div class="flex items-center gap-2 cursor-pointer">
-            <svg width="26" height="26" viewBox="0 0 256 256" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 256 256 L 128 256 L 0 128 L 128 128 Z M 256 128 L 128 128 L 0 0 L 128 0 Z" />
-            </svg>
-            <span class="text-white text-2xl font-playfair italic">Lithos</span>
-        </div>
+    # --- 8. Metric Output ---
+    st.divider()
+    
+    results_df = pd.DataFrame(processes)
+    results_df = results_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']]
+    results_df.columns = ['Process', 'Arrival Time', 'Burst Time', 'Completion Time', 'Turnaround Time', 'Waiting Time']
+    
+    st.subheader("2. Key Performance Indicators")
+    col1, col2 = st.columns(2)
+    col1.metric("Average Waiting Time", f"{results_df['Waiting Time'].mean():.2f} ms")
+    col2.metric("Average Turnaround Time", f"{results_df['Turnaround Time'].mean():.2f} ms")
+    
+    st.write("<br>", unsafe_allow_html=True)
+    
+    # --- 9. Visual Array-Style Ready Queue ---
+    st.subheader("3. Dynamic Ready Queue Visualizer")
+    st.write("Displays the state of the queue at each decision point, formatted like a standard array.")
+    
+    html_content = ""
+    for log in queue_log:
+        if log['is_idle']:
+            html_content += f"""
+            <div class='step-box'>
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
+                <div class='array-wrapper'>
+                    <div class='array-label'>Ready Queue:</div>
+                    <div class='array-container'>
+                        <div class='array-cell idle'>Empty</div>
+                    </div>
+                </div>
+            </div>
+            """
+        else:
+            boxes_html = ""
+            for i, p in enumerate(log['queue_state']):
+                if i == 0: 
+                    boxes_html += f"<div class='array-cell selected'>{p['id']}</div>"
+                else:
+                    boxes_html += f"<div class='array-cell'>{p['id']}</div>"
+            
+            html_content += f"""
+            <div class='step-box'>
+                <div style='color:#94A3B8; font-weight:bold;'>⏱️ Time = {log['time']} ms</div>
+                <div class='array-wrapper'>
+                    <div class='array-label'>Ready Queue:</div>
+                    <div class='array-container'>
+                        {boxes_html}
+                    </div>
+                </div>
+                <div style='color:#34D399; font-size: 0.9em; margin-top: 5px;'>
+                    ➔ SJF selects {log['selected']} (BT: {log['burst']} ms)
+                </div>
+            </div>
+            """
+    
+    st.markdown(html_content, unsafe_allow_html=True)
 
-        <div class="hidden md:flex absolute left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-2 py-2 items-center gap-1">
-            <button class="text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:bg-white/20">Course</button>
-            <button class="text-white/80 px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:bg-white/20 hover:text-white">Field Guides</button>
-            <button class="text-white/80 px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:bg-white/20 hover:text-white">Geology</button>
-            <button class="text-white/80 px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:bg-white/20 hover:text-white">Plans</button>
-            <button class="text-white/80 px-4 py-1.5 rounded-full text-sm font-medium transition-colors hover:bg-white/20 hover:text-white">Live Tour</button>
-        </div>
+    st.write("<br>", unsafe_allow_html=True)
 
-        <div class="flex items-center">
-            <button class="hidden md:block bg-white text-gray-900 text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-gray-100 transition-colors">Sign Up</button>
-            <button class="md:hidden text-white p-1"><i data-lucide="menu"></i></button>
-        </div>
-    </nav>
+    # --- 10. Visual Output (Gantt) ---
+    st.subheader("4. Execution Timeline (Gantt Chart)")
+    df_gantt = pd.DataFrame(gantt_data)
+    
+    color_discrete_map = {
+        'IDLE': '#1E293B', 'P1': '#0EA5E9', 'P2': '#8B5CF6', 
+        'P3': '#10B981', 'P4': '#F43F5E', 'P5': '#F59E0B', 
+        'P6': '#EF4444', 'P7': '#D946EF', 'P8': '#14B8A6', 
+        'P9': '#84CC16', 'P10': '#64748B'
+    }
+    
+    fig = px.bar(
+        df_gantt, 
+        base="Start", 
+        x="Duration", 
+        y="Task", 
+        color="Task", 
+        orientation='h',
+        text="Task",
+        color_discrete_map=color_discrete_map
+    )
+    
+    fig.update_layout(
+        xaxis_title="Time Units (ms)", 
+        yaxis_title="",
+        showlegend=False,
+        height=350,
+        plot_bgcolor='#0B1121', 
+        paper_bgcolor='#0B1121', 
+        font=dict(color="#F8FAFC"),
+        xaxis=dict(showgrid=True, gridcolor='#1E293B', fixedrange=True, dtick=1),
+        yaxis=dict(showgrid=False, fixedrange=True),
+        margin=dict(t=20, b=30, l=10, r=10) 
+    )
+    
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    <!-- Hero Section -->
-    <section class="relative w-full overflow-hidden h-screen bg-black" style="height: 100dvh;">
-        
-        <!-- Base Image -->
-        <div class="absolute inset-0 bg-center bg-cover bg-no-repeat z-10 hero-zoom" style="background-image: url('https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85')"></div>
-
-        <!-- Canvas for Spotlight generation -->
-        <canvas id="maskCanvas" class="absolute inset-0 pointer-events-none" style="display: none;"></canvas>
-
-        <!-- Reveal Layer (Masked Image) -->
-        <div id="revealLayer" class="absolute inset-0 bg-center bg-cover bg-no-repeat z-30 pointer-events-none" style="background-image: url('https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85');"></div>
-
-        <!-- Heading -->
-        <div class="absolute top-[14%] left-0 right-0 flex flex-col items-center text-center px-5 pointer-events-none z-50">
-            <h1 class="text-white leading-[0.95]">
-                <span class="block font-playfair italic font-normal text-5xl sm:text-7xl md:text-8xl hero-anim hero-reveal" style="letter-spacing: -0.05em; animation-delay: 0.25s;">Layers hold</span>
-                <span class="block font-normal text-5xl sm:text-7xl md:text-8xl -mt-1 hero-anim hero-reveal" style="letter-spacing: -0.08em; animation-delay: 0.42s;">tales of time</span>
-            </h1>
-        </div>
-
-        <!-- Bottom Left Text -->
-        <div class="hidden sm:block absolute bottom-14 left-10 md:left-14 max-w-[260px] z-50 hero-anim hero-fade" style="animation-delay: 0.7s;">
-            <p class="text-sm text-white/80 leading-relaxed drop-shadow-sm">Every layer of sediment records a chapter of our planet, from ancient seabeds to drifting ash, layered across millions of years beneath us.</p>
-        </div>
-
-        <!-- Bottom Right Content -->
-        <div class="absolute bottom-10 sm:bottom-24 left-5 right-5 sm:left-auto sm:right-10 md:right-14 max-w-full sm:max-w-[260px] flex flex-col items-start gap-4 sm:gap-5 z-50 hero-anim hero-fade" style="animation-delay: 0.85s;">
-            <p class="text-xs sm:text-sm text-white/80 leading-relaxed drop-shadow-sm">Our interactive maps let you peel back the crust to trace how stones, fossils, and deep time combine to shape the ground beneath your feet.</p>
-            <button class="bg-[#e8702a] hover:bg-[#d2611f] text-white text-sm font-medium px-7 py-3 rounded-full transition-all hover:scale-[1.03] active:scale-95 hover:shadow-lg hover:shadow-[#e8702a]/30">Start Digging</button>
-        </div>
-    </section>
-
-    <!-- Interactive Spotlight Logic -->
-    <script>
-        lucide.createIcons(); // Initialize Icons
-
-        const canvas = document.getElementById('maskCanvas');
-        const revealLayer = document.getElementById('revealLayer');
-        const ctx = canvas.getContext('2d');
-        const SPOTLIGHT_R = 260;
-
-        let mouse = { x: -999, y: -999 };
-        let smooth = { x: -999, y: -999 };
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            if (smooth.x === -999) {
-                smooth.x = e.clientX;
-                smooth.y = e.clientY;
-            }
-        });
-
-        function animateSpotlight() {
-            if (smooth.x !== -999) {
-                smooth.x += (mouse.x - smooth.x) * 0.1;
-                smooth.y += (mouse.y - smooth.y) * 0.1;
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                const gradient = ctx.createRadialGradient(smooth.x, smooth.y, 0, smooth.x, smooth.y, SPOTLIGHT_R);
-                gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                gradient.addColorStop(0.4, 'rgba(255,255,255,1)');
-                gradient.addColorStop(0.6, 'rgba(255,255,255,0.75)');
-                gradient.addColorStop(0.75, 'rgba(255,255,255,0.4)');
-                gradient.addColorStop(0.88, 'rgba(255,255,255,0.12)');
-                gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(smooth.x, smooth.y, SPOTLIGHT_R, 0, Math.PI * 2);
-                ctx.fill();
-
-                const maskUrl = canvas.toDataURL();
-                revealLayer.style.maskImage = `url(${maskUrl})`;
-                revealLayer.style.webkitMaskImage = `url(${maskUrl})`;
-                revealLayer.style.maskSize = '100% 100%';
-                revealLayer.style.webkitMaskSize = '100% 100%';
-            }
-            requestAnimationFrame(animateSpotlight);
-        }
-        animateSpotlight();
-    </script>
-</body>
-</html>
-"""
-
-# --- 4. Render the Code ---
-components.html(lithos_html, height=1000, scrolling=False)
+    # --- 11. Data Output ---
+    st.subheader("5. Detailed Calculation Logs")
+    st.dataframe(results_df, use_container_width=True, hide_index=True)
